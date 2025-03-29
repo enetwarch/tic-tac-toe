@@ -7,25 +7,31 @@ function Main() {
         throw Error(`Use the "new" keyword on the Main constructor.`);
     }
 
-    [this.player, this.computer] = this.initializePlayers();
+    [this.playerOne, this.playerTwo] = this.initializePlayers();
     this.board = this.initializeBoard();
-    this.playerMove = true;
+    this.playerOneTurn = true;
 
-    this.board.updateClickListener((cell) => {
-        const mark = this.playerMove ? this.player.mark : this.computer.mark;
-        cell.updateState(mark);
-        this.playerMove = !this.playerMove;
+    this.board.updateClickListener(cell => {
+        if (!(cell instanceof Cell)) {
+            throw TypeError("cell argument must be a Cell object.");
+        }
+    
+        const player = this.playerOneTurn ? this.playerOne : this.playerTwo;
+        this.playerOneTurn = !this.playerOneTurn;
+
+        cell.updateMark(player.mark);
+        this.board.evaluateWinner(player.name, player.mark);
     });
 }
 
-Main.prototype.querySelector = function(query) {
-    if (typeof query !== "string") {
+Main.prototype.getElementById = function(id) {
+    if (typeof id !== "string") {
         throw TypeError("id argument must be a string.");
     }
 
-    const element = document.querySelector(query);
+    const element = document.getElementById(id);
     if (!element) {
-        throw Error(`"${query}" element does not exist.`);
+        throw Error(`"#${id}" element does not exist.`);
     } else if (!(element instanceof HTMLElement)) {
         throw TypeError("element variable must be returned as an HTML element.");
     }
@@ -34,10 +40,10 @@ Main.prototype.querySelector = function(query) {
 }
 
 Main.prototype.initializePlayers = function() {
-    const player = new Player("Player", "x");
-    const computer = new Player("Computer", "o");
+    const playerOne = new Player("Player One", "x");
+    const playerTwo = new Player("Player Two", "o");
 
-    const players = [ player, computer ];
+    const players = [playerOne, playerTwo];
     if (!Array.isArray(players)) {
         throw TypeError("players variable must be returned as an array.");
     }
@@ -46,7 +52,7 @@ Main.prototype.initializePlayers = function() {
 }
 
 Main.prototype.initializeBoard = function() {
-    const container = this.querySelector(".board-container");
+    const container = this.getElementById("board-container");
     const size = 3;
 
     const board = new Board(container, size);
@@ -125,6 +131,7 @@ Board.prototype.updateClickListener = function(callback) {
 
         const coordinates = JSON.parse(cellElement.dataset.coordinates);
         const cell = this.findCell(coordinates);
+
         callback(cell);
     }
 
@@ -150,7 +157,7 @@ Board.prototype.findCell = function(coordinates) {
     }
 
     const [x, y] = coordinates;
-    if (x < 0 || x > this.size || y < 0 || y > this.size) {
+    if (x < 0 || x >= this.size || y < 0 || y >= this.size) {
         throw RangeError("coordinates argument is out of bounds.");
     }
 
@@ -160,6 +167,78 @@ Board.prototype.findCell = function(coordinates) {
     }
 
     return cell;
+}
+
+Board.prototype.evaluateWinner = function(name, mark) {
+    if (typeof name !== "string") {
+        throw TypeError("name argument must be a string.");
+    } else if (typeof mark !== "string") {
+        throw TypeError("mark argument must be a string.");
+    } else if (!(mark === "x" || mark === "o")) {
+        throw TypeError(`mark argument must only be "x" or "o".`);
+    }
+
+    const rows = this.grid.length;
+    const columns = this.grid[0].length;
+    const directions = this.directionalFunctions();
+
+    let consecutiveMarks = 0;
+
+    for (let i = 0; i < rows * columns; i++) {
+        const x = Math.floor(i / columns);
+        const y = i % columns;
+
+        const cell = this.grid[x][y];
+        if (cell.mark !== mark) {
+            continue;
+        }
+
+        consecutiveMarks++;
+        let directionIndex = 0;
+
+        while (directionIndex < directions.length) {
+            const direction = directions[directionIndex];
+            const [dx, dy] = direction(x, y, consecutiveMarks);
+
+            const outOfBounds = dx < 0 || dx >= rows || dy < 0 || dy >= columns;
+            const incorrectMark = !outOfBounds && this.grid[dx][dy].mark !== mark;
+
+            if (outOfBounds || incorrectMark) {
+                consecutiveMarks = 1;
+                directionIndex++;
+                continue;
+            }
+
+            consecutiveMarks++;
+            if (consecutiveMarks === this.size) {
+                console.log(`${name} won!`);
+                return;
+            }    
+        }
+
+        consecutiveMarks = 0;
+    }
+}
+
+Board.prototype.directionalFunctions = function() {
+    const directions = [
+        (x, y, i) => [x - i, y - i], // Northwest
+        (x, y, i) => [x - i, y],     // North
+        (x, y, i) => [x - i, y + i], // Northeast
+        (x, y, i) => [x, y - i],     // West
+        (x, y, i) => [x, y + i],     // East
+        (x, y, i) => [x + i, y - i], // Southwest
+        (x, y, i) => [x + i, y],     // South
+        (x, y, i) => [x + i, y + i]  // Southeast
+    ];
+
+    if (!Array.isArray(directions)) {
+        throw TypeError("directions variable should be returned as an array.");
+    } else if (!directions.every(direction => typeof direction === "function")) {
+        throw TypeError("directions variable should have function elements.");
+    }
+
+    return directions;
 }
 
 function Cell(coordinates) {
@@ -183,33 +262,33 @@ function Cell(coordinates) {
     this.icon = document.createElement("i");
     this.element.appendChild(this.icon);
 
-    this.state = "";
+    this.mark = "";
 }
 
-Cell.prototype.updateState = function(state) {
-    if (this.state !== "") {
+Cell.prototype.updateMark = function(mark) {
+    if (this.mark !== "") {
         return;
     }
 
-    if (typeof state !== "string") {
-        throw TypeError("state argument needs to be a string");
+    if (typeof mark !== "string") {
+        throw TypeError("mark argument needs to be a string");
     }
 
-    switch (state) {
+    switch (mark) {
         case "x": {
             this.icon.classList.add("x-icon", "fa-solid", "fa-x");
-            this.state = "x";
             break;
         }
 
         case "o": {
             this.icon.classList.add("o-icon", "fa-solid", "fa-o");
-            this.state = "o";
             break;
         }
 
         default: {
-            throw TypeError(`state argument only accepts "x" and "o" values.`);
+            throw TypeError(`mark argument only accepts "x" and "o" values.`);
         }
     }
+
+    this.mark = mark;
 }
