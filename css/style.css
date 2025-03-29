@@ -1,0 +1,133 @@
+@font-face {
+    font-family: "Arial Rounded MT Bold";
+    src: url("../font/arialroundedmtbold.ttf");
+}
+
+:root {
+    --dark-1: hsl(0, 0%, 10%);
+    --dark-2: hsl(0, 0%, 20%);
+    --dark-3: hsl(0, 0%, 30%);
+    --light-1: hsl(0, 0%, 90%);
+    --light-2: hsl(0, 0%, 80%);
+    --light-3: hsl(0, 0%, 70%);
+    --blue: #608cab;
+    --green: #72a079;
+    --red: #bb4948;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+    font-family: "Arial Rounded MT Bold", sans-serif;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    align-items: center;
+    background-color: var(--dark-1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    transition: background-color 0.25s;
+    width: 100%;
+}
+
+.input-container {
+    background-color: var(--dark-2);
+    border-radius: 0.5rem;
+    bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    position: absolute;
+}
+
+@media only screen and (max-height: 600px) {
+    .input-container {
+        bottom: unset;
+        flex-direction: column-reverse;
+        right: 2rem;
+    }
+}
+
+.input-button {
+    align-items: center;
+    background-color: var(--dark-3);
+    border: none;
+    border-radius: 0.5rem;
+    display: flex;
+    height: 4rem;
+    justify-content: center;
+    transition: opacity 0.25s;
+    width: 4rem;
+}
+
+.input-button:focus-visible {
+    outline: solid 2px var(--light-1);
+}
+
+.input-button:hover {
+    cursor: pointer;
+}
+
+.input-button:active {
+    opacity: 0.9;
+}
+
+.input-icon {
+    color: var(--light-1);
+    font-size: 2rem;
+}
+
+.board-container {
+    align-items: center;
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.board-grid {
+    background-color: var(--dark-2);
+    border-radius: 0.5rem;
+    display: grid;
+    gap: 1rem;
+    grid-template: repeat(3, 4rem) / repeat(3, 4rem);
+    overflow: hidden;
+    padding: 1rem;
+}
+
+.board-cell {
+    align-items: center;
+    background-color: var(--dark-3);
+    border: none;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    transition: opacity 0.25s;
+}
+
+.board-cell:focus-visible {
+    outline: 2px solid var(--light-1);
+}
+
+.board-cell:hover {
+    cursor: pointer;
+}
+
+.board-cell:active {
+    opacity: 0.9;
+}
+
+.x-icon {
+    color: var(--red);
+    font-size: 2rem;
+}
+
+.o-icon {
+    color: var(--blue);
+    font-size: 2rem;
+}
