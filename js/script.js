@@ -1,8 +1,41 @@
 window.addEventListener("load", () => {
-    const container = document.querySelector(".board-container");
-    const size = 3;
-    const board = new Board(container, size);
+    const main = new Main();
 });
+
+function Main() {
+    if (!new.target) {
+        throw Error(`Use the "new" keyword on the Main constructor.`);
+    }
+
+    this.board = this.initializeBoard();
+}
+
+Main.prototype.querySelector = function(query) {
+    if (typeof query !== "string") {
+        throw TypeError("id argument must be a string.");
+    }
+
+    const element = document.querySelector(query);
+    if (!element) {
+        throw Error(`"${query}" element does not exist.`);
+    } else if (!(element instanceof HTMLElement)) {
+        throw TypeError("element variable must be returned as an HTML element.");
+    }
+
+    return element;
+}
+
+Main.prototype.initializeBoard = function() {
+    const container = this.querySelector(".board-container");
+    const size = 3;
+
+    const board = new Board(container, size);
+    if (!(board instanceof Board)) {
+        throw TypeError("board variable must be returned as a Board object.");
+    }
+
+    return board;
+}
 
 function Board(container, size) {
     if (!new.target) {
