@@ -7,7 +7,15 @@ function Main() {
         throw Error(`Use the "new" keyword on the Main constructor.`);
     }
 
+    [this.player, this.computer] = this.initializePlayers();
     this.board = this.initializeBoard();
+    this.playerMove = true;
+
+    this.board.updateClickListener((cell) => {
+        const mark = this.playerMove ? this.player.mark : this.computer.mark;
+        cell.updateState(mark);
+        this.playerMove = !this.playerMove;
+    });
 }
 
 Main.prototype.querySelector = function(query) {
@@ -25,6 +33,18 @@ Main.prototype.querySelector = function(query) {
     return element;
 }
 
+Main.prototype.initializePlayers = function() {
+    const player = new Player("Player", "x");
+    const computer = new Player("Computer", "o");
+
+    const players = [ player, computer ];
+    if (!Array.isArray(players)) {
+        throw TypeError("players variable must be returned as an array.");
+    }
+
+    return players;
+}
+
 Main.prototype.initializeBoard = function() {
     const container = this.querySelector(".board-container");
     const size = 3;
@@ -35,6 +55,23 @@ Main.prototype.initializeBoard = function() {
     }
 
     return board;
+}
+
+function Player(name, mark) {
+    if (!new.target) {
+        throw Error(`Use the "new" keyword on the Player constructor.`);
+    }
+
+    if (typeof name !== "string") {
+        throw TypeError("name argument must be a string.");
+    } else if (typeof mark !== "string") {
+        throw TypeError("mark argument must be a string.");
+    } else if (!(mark === "x" || mark === "o")) {
+        throw TypeError(`mark argument must only be "x" or "o".`);
+    }
+
+    this.name = name;
+    this.mark = mark;
 }
 
 function Board(container, size) {
@@ -160,13 +197,13 @@ Cell.prototype.updateState = function(state) {
 
     switch (state) {
         case "x": {
-            this.icon.appendChild("x-icon", "fa-solid", "fa-x");
+            this.icon.classList.add("x-icon", "fa-solid", "fa-x");
             this.state = "x";
             break;
         }
 
         case "o": {
-            this.icon.appendChild("o-icon", "fa-solid", "fa-o");
+            this.icon.classList.add("o-icon", "fa-solid", "fa-o");
             this.state = "o";
             break;
         }
