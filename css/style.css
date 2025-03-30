@@ -140,3 +140,120 @@ body {
     color: var(--blue);
     font-size: 2rem;
 }
+
+.modal {
+    background-color: transparent;
+    border: none;
+    left: 50%;
+    max-width: 400px;
+    padding: 2rem;
+    position: fixed;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+}
+
+.modal::backdrop {
+    background-color: hsl(0, 0%, 0%, 0.5);
+}
+
+.modal:focus {
+    outline: none;
+}
+
+.modal-container {
+    background-color: var(--dark-1);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    position: relative;
+}
+
+.modal-close-button {
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    display: flex;
+    height: 1rem;
+    justify-content: center;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    transition: opacity 0.25s;
+    width: 1rem;
+}
+
+.modal-close-button:hover {
+    cursor: pointer;
+}
+
+.modal-close-button:active {
+    opacity: 0.9;
+}
+
+.modal-close-icon {
+    color: var(--light-1);
+    font-size: 16px;
+}
+
+.information-container {
+    background-color: var(--dark-2);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.information-text {
+    color: var(--light-2);
+}
+
+.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-top: 1rem;
+}
+
+.red-button {
+    background-color: var(--red);
+}
+
+.blue-button {
+    background-color: var(--blue);
+}
+
+.green-button {
+    background-color: var(--green);
+}
+
+.red-button,
+.blue-button,
+.green-button {
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--light-1);
+    flex-grow: 1;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 1rem;
+    transition: opacity 0.25s;
+}
+
+.red-button:focus-visible,
+.blue-button:focus-visible,
+.green-button:focus-visible {
+    outline: solid 2px var(--light-1);
+}
+
+.red-button:hover,
+.blue-button:hover,
+.green-button:hover {
+    cursor: pointer;
+}
+
+.red-button:active,
+.blue-button:active,
+.green-button:active {
+    opacity: 0.9;
+}

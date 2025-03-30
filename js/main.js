@@ -1,5 +1,5 @@
 import { Board, Cell } from "./modules/board.js";
-import { Player, Button } from "./modules/controls.js";
+import { Player, Button, Modal } from "./modules/controls.js";
 
 window.addEventListener("load", () => {
     const main = new Main();
@@ -10,13 +10,32 @@ function Main() {
         throw Error(`Use the "new" keyword on the Main constructor.`);
     }
 
-    [this.resetButton, this.playButton, this.userButton] = this.initializeButtons();
+    [this.resetButton, this.playButton, this.userButton] = this.initializeInputButtons();
+    [this.resetModal] = this.initializeModals();
+    [this.noResetButton, this.yesResetButton] = this.initializeResetModalButtons();
     [this.playerOne, this.playerTwo] = this.initializePlayers();
     this.board = this.initializeBoard();
     
     this.playerOneTurn = true;
 
-    this.resetButton.triggerButtonListener(() => this.board.resetBoard());
+    this.resetButton.addListener("click", () => {
+        this.resetButton.invertButton();
+        this.resetModal.showModal();
+    });
+
+    this.resetModal.addCallback("close", () => {
+        this.resetButton.invertButton();
+    });
+
+    this.noResetButton.addListener("click", () => {
+        this.resetModal.closeModal();
+    });
+
+    this.yesResetButton.addListener("click", () => {
+        this.board.resetBoard();
+        this.resetModal.closeModal();
+    });
+
     this.board.updateClickListener(cell => this.playTurn(cell));
 }
 
@@ -33,6 +52,36 @@ Main.prototype.getElementById = function(id) {
     }
 
     return element;
+}
+
+Main.prototype.initializeInputButtons = function() {
+    const resetButtonElement = this.getElementById("reset-button");
+    const resetButton = new Button(resetButtonElement);
+
+    const playButtonElement = this.getElementById("play-button");
+    const playButton = new Button(playButtonElement);
+
+    const userButtonElement = this.getElementById("user-button");
+    const userButton = new Button(userButtonElement);
+
+    return [resetButton, playButton, userButton];
+}
+
+Main.prototype.initializeModals = function() {
+    const resetModalElement = this.getElementById("reset-modal");
+    const resetModal = new Modal(resetModalElement);
+
+    return [resetModal];
+}
+
+Main.prototype.initializeResetModalButtons = function() {
+    const noResetButtonElement = this.getElementById("no-reset-button");
+    const noResetButton = new Button(noResetButtonElement);
+
+    const yesResetButtonElement = this.getElementById("yes-reset-button");
+    const yesResetButton = new Button(yesResetButtonElement);
+
+    return [noResetButton, yesResetButton];
 }
 
 Main.prototype.initializePlayers = function() {
@@ -56,19 +105,6 @@ Main.prototype.initializeBoard = function() {
     }
 
     return board;
-}
-
-Main.prototype.initializeButtons = function() {
-    const resetButtonElement = this.getElementById("reset-button");
-    const resetButton = new Button(resetButtonElement);
-
-    const playButtonElement = this.getElementById("play-button");
-    const playButton = new Button(playButtonElement);
-
-    const userButtonElement = this.getElementById("user-button");
-    const userButton = new Button(userButtonElement);
-
-    return [resetButton, playButton, userButton];
 }
 
 Main.prototype.playTurn = function(cell) {
