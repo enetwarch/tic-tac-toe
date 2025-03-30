@@ -62,7 +62,7 @@ body {
     display: flex;
     height: 4rem;
     justify-content: center;
-    transition: opacity 0.25s;
+    transition: background-color 0.25s, opacity 0.25s;
     width: 4rem;
 }
 
@@ -78,9 +78,18 @@ body {
     opacity: 0.9;
 }
 
+.input-button.inverted {
+    background-color: var(--light-1);
+}
+
+.input-button.inverted > .input-icon {
+    color: var(--dark-1);
+}
+
 .input-icon {
     color: var(--light-1);
     font-size: 2rem;
+    transition: color 0.25s;
 }
 
 .board-container {

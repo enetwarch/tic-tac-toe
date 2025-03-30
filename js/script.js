@@ -7,10 +7,13 @@ function Main() {
         throw Error(`Use the "new" keyword on the Main constructor.`);
     }
 
+    [this.resetButton, this.playButton, this.userButton] = this.initializeButtons();
     [this.playerOne, this.playerTwo] = this.initializePlayers();
     this.board = this.initializeBoard();
+    
     this.playerOneTurn = true;
 
+    this.resetButton.triggerButtonListener(() => this.board.resetBoard());
     this.board.updateClickListener(cell => this.playTurn(cell));
 }
 
@@ -43,14 +46,26 @@ Main.prototype.initializePlayers = function() {
 
 Main.prototype.initializeBoard = function() {
     const container = this.getElementById("board-container");
-    const size = 3;
 
-    const board = new Board(container, size);
+    const board = new Board(container);
     if (!(board instanceof Board)) {
         throw TypeError("board variable must be returned as a Board object.");
     }
 
     return board;
+}
+
+Main.prototype.initializeButtons = function() {
+    const resetButtonElement = this.getElementById("reset-button");
+    const resetButton = new Button(resetButtonElement);
+
+    const playButtonElement = this.getElementById("play-button");
+    const playButton = new Button(playButtonElement);
+
+    const userButtonElement = this.getElementById("user-button");
+    const userButton = new Button(userButtonElement);
+
+    return [resetButton, playButton, userButton];
 }
 
 Main.prototype.playTurn = function(cell) {
@@ -65,9 +80,40 @@ Main.prototype.playTurn = function(cell) {
 
     const winner = this.board.evaluateWinner(player.name, player.mark);
     if (winner) {
-        console.log(`${player.name} won!`);
-        this.board.deleteClickListener();
+        console.log(`${player.name} wins!`);
     }
+}
+
+function Button(element) {
+    if (!new.target) {
+        throw Error(`Use the "new" keyword on the Button constructor.`);
+    }
+
+    if (!(element instanceof HTMLElement)) {
+        throw TypeError("element argument must be an HTMLElement");
+    }
+
+    this.element = element;
+    this.isToggled = false;
+}
+
+Button.prototype.triggerButtonListener = function(callback) {
+    if (typeof callback !== "function") {
+        throw TypeError("callback argument must be a function.");
+    }
+
+    this.element.addEventListener("click", () => callback());
+}
+
+Button.prototype.toggleButtonListener = function(callback, className = "inverted") {
+    if (typeof callback !== "function") {
+        throw TypeError("callback argument must be a function.");
+    }
+
+    this.element.classList.toggle(className);
+    this.isToggled = !this.isToggled;
+
+    callback(this.isToggled);
 }
 
 function Player(name, mark) {
@@ -87,7 +133,7 @@ function Player(name, mark) {
     this.mark = mark;
 }
 
-function Board(container, size) {
+function Board(container, size = 3) {
     if (!new.target) {
         throw Error(`Use the "new" keyword on the Board constructor.`);
     }
@@ -104,6 +150,7 @@ function Board(container, size) {
     this.element = document.createElement("div");
     this.element.classList.add("board-grid");
 
+    this.finished = false;
     this.grid = [];
 
     for (let x = 0; x < this.size; x++) {
@@ -143,6 +190,10 @@ Board.prototype.updateClickListener = function(callback) {
             return;
         }
 
+        if (this.finished) {
+            return;
+        }
+
         callback(cell);
     }
 
@@ -156,6 +207,17 @@ Board.prototype.deleteClickListener = function() {
 
     this.element.removeEventListener("click", this.listener);
     this.listener = null;
+}
+
+Board.prototype.resetBoard = function() {
+    if (this.finished) {
+        this.finished = false;
+    }
+
+    const cells = this.grid.flat(1);
+    cells.forEach(cell => {
+        cell.resetMark();
+    });
 }
 
 Board.prototype.findCell = function(coordinates) {
@@ -222,6 +284,7 @@ Board.prototype.evaluateWinner = function(name, mark) {
 
             consecutiveMarks++;
             if (consecutiveMarks === this.size) {
+                this.finished = true;
                 return true;
             }    
         }
@@ -243,12 +306,6 @@ Board.prototype.directionalFunctions = function() {
         (x, y, i) => [x + i, y],     // South
         (x, y, i) => [x + i, y + i]  // Southeast
     ];
-
-    if (!Array.isArray(directions)) {
-        throw TypeError("directions variable should be returned as an array.");
-    } else if (!directions.every(direction => typeof direction === "function")) {
-        throw TypeError("directions variable should have function elements.");
-    }
 
     return directions;
 }
@@ -303,4 +360,13 @@ Cell.prototype.updateMark = function(mark) {
     }
 
     this.mark = mark;
+}
+
+Cell.prototype.resetMark = function() {
+    if (this.mark === "") {
+        return;
+    }
+
+    this.mark = "";
+    this.icon.classList.remove(...this.icon.classList);
 }
