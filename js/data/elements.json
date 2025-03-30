@@ -1,0 +1,42 @@
+[
+    {
+        "id": "resetButton",
+        "type": "button"
+    },
+    {
+        "id": "playButton",
+        "type": "button"
+    },
+    {
+        "id": "userButton",
+        "type": "button"
+    },
+    {
+        "id": "noResetButton",
+        "type": "button"
+    },
+    {
+        "id": "yesResetButton",
+        "type": "button"
+    },
+    {
+        "id": "confirmPlayerButton",
+        "type": "button"
+    },
+    {
+        "id": "resetModal",
+        "type": "modal"
+    },
+    {
+        "id": "playerModal",
+        "type": "modal"
+    },
+    {
+        "id": "playerForm",
+        "type": "form"
+    },
+    {
+        "id": "board",
+        "type": "board"
+    }
+]

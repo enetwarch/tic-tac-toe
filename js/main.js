@@ -1,3 +1,4 @@
+import elements from "./data/elements.json" with { "type": "json" };
 import Button from "./modules/button.js";
 import Modal from "./modules/modal.js";
 import Form from "./modules/form.js";
@@ -14,20 +15,7 @@ function Main() {
         throw Error(`Use the "new" keyword on the Main constructor.`);
     }
 
-    const componentConfig = [
-        ["resetButton", "button"],
-        ["playButton", "button"],
-        ["userButton", "button"],
-        ["noResetButton", "button"],
-        ["yesResetButton", "button"],
-        ["confirmPlayerButton", "button"],
-        ["resetModal", "modal"],
-        ["playerModal", "modal"],
-        ["playerForm", "form"],
-        ["board", "board"]
-    ];
-
-    this.initializeComponents(componentConfig);
+    this.initializeElements(elements);
     
     this.resetButton.addListener("click", this.clickResetButton.bind(this));
     this.resetModal.addCallback("close", this.closeResetModal.bind(this));
@@ -163,24 +151,30 @@ Main.prototype.getElementById = function(id) {
     return element;
 }
 
-Main.prototype.initializeComponents = function(componentConfig) {
-    if (!Array.isArray(componentConfig)) {
-        throw TypeError("componentConfig argument must be an array.");
-    } else if (!componentConfig.every(config => config.length === 2)) {
-        throw TypeError("componentConfig argument inner arrays must be 2 length.");
-    } else if (!componentConfig.flat(1).every(element => typeof element === "string")) {
-        throw TypeError("componentConfig argument inner arrays must be strings.");
+Main.prototype.initializeElements = function(elements) {
+    if (!Array.isArray(elements)) {
+        throw TypeError("elements argument must be an array.");
+    } else if (!elements.every(element => typeof element === "object")) {
+        throw TypeError("elements argument must contain objects.");
+    } else if (!elements.every(element => "id" in element)) {
+        throw TypeError(`elements argument must contain objects that have an "id" key.`);
+    } else if (!elements.every(element => "type" in element)) {
+        throw TypeError(`elements argument must contain objects that have a "type" key.`);
+    } else if (!elements.every(element => typeof element.id === "string")) {
+        throw TypeError(`elements argument must contain objects with "id" as a string.`);
+    } else if (!elements.every(element => typeof element.type === "string")) {
+        throw TypeError(`elements argument must contain objects with "type" as a string.`);
     }
 
-    for (const component of componentConfig) {
-        const [id, type] = component;
+    for (const element of elements) {
+        const { id, type } = element;
 
-        const element = this.getElementById(id);
-        this[id] = this.componentFactory(type, element);
+        const htmlElement = this.getElementById(id);
+        this[id] = this.elementFactory(type, htmlElement);
     }
 }
 
-Main.prototype.componentFactory = function(type, element) {
+Main.prototype.elementFactory = function(type, element) {
     if (typeof type !== "string") {
         throw TypeError("type argument must be a string.");
     } else if (!(element instanceof HTMLElement)) {
