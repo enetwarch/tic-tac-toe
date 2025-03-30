@@ -10,21 +10,23 @@
         <script src="https://kit.fontawesome.com/0541e3b46f.js" crossorigin="anonymous"></script>
     </head>
     <body>
-        <div id="board-container" class="board-container">
+        <div class="board-container">
+            <div id="board" class="board-grid">
 
+            </div>
         </div>
         <div class="input-container">
-            <button id="reset-button" class="input-button" type="button">
+            <button id="resetButton" class="input-button" type="button">
                 <i class="input-icon fa-solid fa-rotate-left"></i>
             </button>
-            <button id="play-button" class="input-button" type="button">
+            <button id="playButton" class="input-button" type="button">
                 <i class="input-icon fa-solid fa-play"></i>    
             </button>
-            <button id="user-button" class="input-button" type="button">
+            <button id="userButton" class="input-button" type="button">
                 <i class="input-icon fa-solid fa-user"></i>
             </button>
         </div>
-        <dialog id="reset-modal" class="modal">
+        <dialog id="resetModal" class="modal">
             <div class="modal-container">
                 <button class="modal-close-button" type="button">
                     <i class="modal-close-icon fa-solid fa-xmark"></i>
@@ -33,28 +35,28 @@
                     <p class="information-text">Would you like to reset the board?</p>
                 </div>
                 <div class="button-container">
-                    <button id="no-reset-button" class="red-button" type="button">No</button>
-                    <button id="yes-reset-button" class="green-button">Yes</button>
+                    <button id="noResetButton" class="red-button" type="button">No</button>
+                    <button id="yesResetButton" class="green-button">Yes</button>
                 </div>
             </div>
         </dialog>
-        <dialog id="player-modal" class="modal">
-            <form id="player-form" class="modal-container">
+        <dialog id="playerModal" class="modal">
+            <form id="playerForm" class="modal-container">
                 <button class="modal-close-button" type="button">
                     <i class="modal-close-icon fa-solid fa-xmark"></i>
                 </button>
                 <div class="form-field">
                     <label for="player-one" class="form-field-label">Player 1</label>
                     <i class="form-field-icon fa-solid fa-x"></i>
-                    <input id="player-one" class="form-field-input" name="player-one" type="text" maxlength="10" placeholder="Zero">
+                    <input id="playerOne" class="form-field-input" name="player-one" type="text" maxlength="10" placeholder="Zero">
                 </div>
                 <div class="form-field">
                     <label for="player-two" class="form-field-label">Player 2</label>
                     <i class="form-field-icon fa-solid fa-o"></i>
-                    <input id="player-two" class="form-field-input" name="player-two" type="text" maxlength="10" placeholder="Bloom">
+                    <input id="playerTwo" class="form-field-input" name="player-two" type="text" maxlength="10" placeholder="Bloom">
                 </div>
                 <div class="button-container">
-                    <button id="confirm-player-button" class="blue-button" type="submit">Confirm</button>
+                    <button id="confirmPlayerButton" class="blue-button" type="submit">Confirm</button>
                 </div>
             </form>
         </dialog>

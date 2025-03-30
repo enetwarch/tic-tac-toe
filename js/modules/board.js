@@ -1,21 +1,18 @@
 import Cell from "./cell.js";
 
-export default function Board(container, size = 3) {
+export default function Board(element, size = 3) {
     if (!new.target) {
         throw Error(`Use the "new" keyword on the Board constructor.`);
     }
 
-    if (!(container instanceof HTMLElement)) {
+    if (!(element instanceof HTMLElement)) {
         throw TypeError("container argument needs to be an HTML element.");
     } else if (typeof size !== "number") {
         throw TypeError("size argument needs to be a number.");
     }
 
-    this.container = container;
+    this.element = element;
     this.size = size;
-
-    this.element = document.createElement("div");
-    this.element.classList.add("board-grid");
 
     this.finished = false;
     this.grid = [];
@@ -31,8 +28,6 @@ export default function Board(container, size = 3) {
             this.element.appendChild(cell.element);
         }
     }
-
-    this.container.appendChild(this.element);
 }
 
 Board.prototype.updateClickListener = function(callback) {

@@ -14,75 +14,33 @@ function Main() {
         throw Error(`Use the "new" keyword on the Main constructor.`);
     }
 
-    this.initializeButtons();
-    this.initializeModals();
-    this.initializeForm();
-    this.initializeBoard();
+    const componentConfig = [
+        ["resetButton", "button"],
+        ["playButton", "button"],
+        ["userButton", "button"],
+        ["noResetButton", "button"],
+        ["yesResetButton", "button"],
+        ["confirmPlayerButton", "button"],
+        ["resetModal", "modal"],
+        ["playerModal", "modal"],
+        ["playerForm", "form"],
+        ["board", "board"]
+    ];
+
+    this.initializeComponents(componentConfig);
     
-    this.resetButton.addListener("click", () => {
-        this.resetButton.invertButton();
-        this.resetModal.showModal();
-    });
+    this.resetButton.addListener("click", this.clickResetButton.bind(this));
+    this.resetModal.addCallback("close", this.closeResetModal.bind(this));
+    this.noResetButton.addListener("click", this.clickNoResetButton.bind(this));
+    this.yesResetButton.addListener("click", this.clickYesResetButton.bind(this));
 
-    this.resetModal.addCallback("close", () => {
-        this.resetButton.invertButton();
-    });
-
-    this.noResetButton.addListener("click", () => {
-        this.resetModal.closeModal();
-    });
-
-    this.yesResetButton.addListener("click", () => {
-        this.board.resetBoard();
-        this.resetModal.closeModal();
-    });
-
-    this.userButton.addListener("click", () => {
-        this.userButton.invertButton();
-        this.playerModal.showModal();
-    });
-
-    this.playerModal.addCallback("open", () => {
-        if (!(this.playerOne && this.playerTwo)) {
-            return;
-        }
-
-        const nameOne = this.playerOne.name;
-        const nameTwo = this.playerTwo.name;
-
-        const players = {
-            "player-one": nameOne === "Player One" ? "" : nameOne,
-            "player-two": nameTwo === "Player Two" ? "" : nameTwo
-        };
-
-        this.playerForm.insertValues(players);
-    });
-
-    this.playerModal.addCallback("close", () => {
-        this.userButton.invertButton();
-
-        if (!this.playerOne) {
-            this.playerOne = new Player("Player One", "x");
-        }
-
-        if (!this.playerTwo) {
-            this.playerTwo = new Player("Player Two", "o");
-        }
-
-        const players = [this.playerOne, this.playerTwo];
-        localStorage.setItem("players", JSON.stringify(players));
-
-        this.playerForm.resetForm();
-    });
-
-    this.playerForm.changeSubmitListener(formData => {
-        this.updatePlayers(formData);
-    });
+    this.userButton.addListener("click", this.clickUserButton.bind(this));
+    this.playerModal.addCallback("open", this.openPlayerModal.bind(this));
+    this.playerModal.addCallback("close", this.closePlayerModal.bind(this));
+    this.playerForm.changeSubmitListener(this.updatePlayers.bind(this));
 
     this.playerOneTurn = true;
-    this.board.updateClickListener(cell => {
-        this.playTurn(cell);
-    });
+    this.board.updateClickListener(this.playTurn.bind(this));
 
     const players = JSON.parse(localStorage.getItem("players"));
     if (!players) {
@@ -93,19 +51,60 @@ function Main() {
     }
 }
 
-Main.prototype.getElementById = function(id) {
-    if (typeof id !== "string") {
-        throw TypeError("id argument must be a string.");
+Main.prototype.clickResetButton = function() {
+    this.resetButton.invertButton();
+    this.resetModal.showModal();
+}
+
+Main.prototype.closeResetModal = function() {
+    this.resetButton.invertButton();
+}
+
+Main.prototype.clickNoResetButton = function() {
+    this.resetModal.closeModal();
+}
+
+Main.prototype.clickYesResetButton = function() {
+    this.board.resetBoard();
+    this.resetModal.closeModal();
+}
+
+Main.prototype.clickUserButton = function() {
+    this.userButton.invertButton();
+    this.playerModal.showModal();
+}
+
+Main.prototype.openPlayerModal = function() {
+    if (!(this.playerOne && this.playerTwo)) {
+        return;
     }
 
-    const element = document.getElementById(id);
-    if (!element) {
-        throw Error(`"${id}" element id does not exist.`);
-    } else if (!(element instanceof HTMLElement)) {
-        throw TypeError("element variable must be returned as an HTML element.");
+    const nameOne = this.playerOne.name;
+    const nameTwo = this.playerTwo.name;
+
+    const players = {
+        "player-one": nameOne === "Player One" ? "" : nameOne,
+        "player-two": nameTwo === "Player Two" ? "" : nameTwo
+    };
+
+    this.playerForm.insertValues(players);
+}
+
+Main.prototype.closePlayerModal = function() {
+    this.userButton.invertButton();
+
+    if (!this.playerOne) {
+        this.playerOne = new Player("Player One", "x");
     }
 
-    return element;
+    if (!this.playerTwo) {
+        this.playerTwo = new Player("Player Two", "o");
+    }
+
+    const players = [this.playerOne, this.playerTwo];
+    localStorage.setItem("players", JSON.stringify(players));
+
+    this.playerForm.resetForm();
 }
 
 Main.prototype.updatePlayers = function(formData) {
@@ -149,40 +148,51 @@ Main.prototype.playTurn = function(cell) {
     }
 }
 
-Main.prototype.initializeButtons = function() {
-    const resetButtonElement = this.getElementById("reset-button");
-    this.resetButton = new Button(resetButtonElement);
+Main.prototype.getElementById = function(id) {
+    if (typeof id !== "string") {
+        throw TypeError("id argument must be a string.");
+    }
 
-    const playButtonElement = this.getElementById("play-button");
-    this.playButton = new Button(playButtonElement);
+    const element = document.getElementById(id);
+    if (!element) {
+        throw Error(`"${id}" element id does not exist.`);
+    } else if (!(element instanceof HTMLElement)) {
+        throw TypeError("element variable must be returned as an HTML element.");
+    }
 
-    const userButtonElement = this.getElementById("user-button");
-    this.userButton = new Button(userButtonElement);
-
-    const noResetButtonElement = this.getElementById("no-reset-button");
-    this.noResetButton = new Button(noResetButtonElement);
-
-    const yesResetButtonElement = this.getElementById("yes-reset-button");
-    this.yesResetButton = new Button(yesResetButtonElement);
-
-    const confirmPlayerButtonElement = this.getElementById("confirm-player-button");
-    this.confirmPlayerButton = new Button(confirmPlayerButtonElement);
+    return element;
 }
 
-Main.prototype.initializeModals = function() {
-    const resetModalElement = this.getElementById("reset-modal");
-    this.resetModal = new Modal(resetModalElement);
+Main.prototype.initializeComponents = function(componentConfig) {
+    if (!Array.isArray(componentConfig)) {
+        throw TypeError("componentConfig argument must be an array.");
+    } else if (!componentConfig.every(config => config.length === 2)) {
+        throw TypeError("componentConfig argument inner arrays must be 2 length.");
+    } else if (!componentConfig.flat(1).every(element => typeof element === "string")) {
+        throw TypeError("componentConfig argument inner arrays must be strings.");
+    }
 
-    const playerModalElement = this.getElementById("player-modal");
-    this.playerModal = new Modal(playerModalElement);
+    for (const component of componentConfig) {
+        const [id, type] = component;
+
+        const element = this.getElementById(id);
+        this[id] = this.componentFactory(type, element);
+    }
 }
 
-Main.prototype.initializeForm = function() {
-    const playerFormElement = this.getElementById("player-form");
-    this.playerForm = new Form(playerFormElement);
-}
+Main.prototype.componentFactory = function(type, element) {
+    if (typeof type !== "string") {
+        throw TypeError("type argument must be a string.");
+    } else if (!(element instanceof HTMLElement)) {
+        throw TypeError("element argument must be an HTML element.");
+    }
 
-Main.prototype.initializeBoard = function() {
-    const container = this.getElementById("board-container");
-    this.board = new Board(container);
+    switch (type) {
+        case "button": return new Button(element);
+        case "modal": return new Modal(element);
+        case "form": return new Form(element);
+        case "board": return new Board(element);
+
+        default: throw TypeError(`Unknown type: "${type}".`);
+    }
 }
