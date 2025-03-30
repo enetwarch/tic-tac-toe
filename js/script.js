@@ -11,17 +11,7 @@ function Main() {
     this.board = this.initializeBoard();
     this.playerOneTurn = true;
 
-    this.board.updateClickListener(cell => {
-        if (!(cell instanceof Cell)) {
-            throw TypeError("cell argument must be a Cell object.");
-        }
-    
-        const player = this.playerOneTurn ? this.playerOne : this.playerTwo;
-        this.playerOneTurn = !this.playerOneTurn;
-
-        cell.updateMark(player.mark);
-        this.board.evaluateWinner(player.name, player.mark);
-    });
+    this.board.updateClickListener(cell => this.playTurn(cell));
 }
 
 Main.prototype.getElementById = function(id) {
@@ -31,7 +21,7 @@ Main.prototype.getElementById = function(id) {
 
     const element = document.getElementById(id);
     if (!element) {
-        throw Error(`"#${id}" element does not exist.`);
+        throw Error(`"${id}" element id does not exist.`);
     } else if (!(element instanceof HTMLElement)) {
         throw TypeError("element variable must be returned as an HTML element.");
     }
@@ -61,6 +51,23 @@ Main.prototype.initializeBoard = function() {
     }
 
     return board;
+}
+
+Main.prototype.playTurn = function(cell) {
+    if (!(cell instanceof Cell)) {
+        throw TypeError("cell argument must be a Cell object.");
+    }
+
+    const player = this.playerOneTurn ? this.playerOne : this.playerTwo;
+    this.playerOneTurn = !this.playerOneTurn;
+
+    cell.updateMark(player.mark);
+
+    const winner = this.board.evaluateWinner(player.name, player.mark);
+    if (winner) {
+        console.log(`${player.name} won!`);
+        this.board.deleteClickListener();
+    }
 }
 
 function Player(name, mark) {
@@ -132,6 +139,10 @@ Board.prototype.updateClickListener = function(callback) {
         const coordinates = JSON.parse(cellElement.dataset.coordinates);
         const cell = this.findCell(coordinates);
 
+        if (cell.mark !== "") {
+            return;
+        }
+
         callback(cell);
     }
 
@@ -139,7 +150,7 @@ Board.prototype.updateClickListener = function(callback) {
 }
 
 Board.prototype.deleteClickListener = function() {
-    if (this.listener) {
+    if (!this.listener) {
         return;
     }
 
@@ -211,13 +222,14 @@ Board.prototype.evaluateWinner = function(name, mark) {
 
             consecutiveMarks++;
             if (consecutiveMarks === this.size) {
-                console.log(`${name} won!`);
-                return;
+                return true;
             }    
         }
 
         consecutiveMarks = 0;
     }
+
+    return false;
 }
 
 Board.prototype.directionalFunctions = function() {
