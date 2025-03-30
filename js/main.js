@@ -1,5 +1,9 @@
-import { Board, Cell } from "./modules/board.js";
-import { Player, Button, Modal, Form } from "./modules/controls.js";
+import Button from "./modules/button.js";
+import Modal from "./modules/modal.js";
+import Form from "./modules/form.js";
+import Board from "./modules/board.js";
+import Cell from "./modules/cell.js";
+import Player from "./modules/player.js";
 
 window.addEventListener("load", () => {
     const main = new Main();
@@ -58,12 +62,15 @@ function Main() {
         this.userButton.invertButton();
 
         if (!this.playerOne) {
-            this.playerOne === new Player("Player One", "x");
+            this.playerOne = new Player("Player One", "x");
         }
 
         if (!this.playerTwo) {
-            this.playerTwo === new Player("Player Two", "o");
+            this.playerTwo = new Player("Player Two", "o");
         }
+
+        const players = [this.playerOne, this.playerTwo];
+        localStorage.setItem("players", JSON.stringify(players));
 
         this.playerForm.resetForm();
     });
