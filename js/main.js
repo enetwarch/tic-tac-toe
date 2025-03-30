@@ -1,5 +1,5 @@
 import { Board, Cell } from "./modules/board.js";
-import { Player, Button, Modal } from "./modules/controls.js";
+import { Player, Button, Modal, Form } from "./modules/controls.js";
 
 window.addEventListener("load", () => {
     const main = new Main();
@@ -10,14 +10,11 @@ function Main() {
         throw Error(`Use the "new" keyword on the Main constructor.`);
     }
 
-    [this.resetButton, this.playButton, this.userButton] = this.initializeInputButtons();
-    [this.resetModal] = this.initializeModals();
-    [this.noResetButton, this.yesResetButton] = this.initializeResetModalButtons();
-    [this.playerOne, this.playerTwo] = this.initializePlayers();
-    this.board = this.initializeBoard();
+    this.initializeButtons();
+    this.initializeModals();
+    this.initializeForm();
+    this.initializeBoard();
     
-    this.playerOneTurn = true;
-
     this.resetButton.addListener("click", () => {
         this.resetButton.invertButton();
         this.resetModal.showModal();
@@ -36,7 +33,57 @@ function Main() {
         this.resetModal.closeModal();
     });
 
-    this.board.updateClickListener(cell => this.playTurn(cell));
+    this.userButton.addListener("click", () => {
+        this.userButton.invertButton();
+        this.playerModal.showModal();
+    });
+
+    this.playerModal.addCallback("open", () => {
+        if (!(this.playerOne && this.playerTwo)) {
+            return;
+        }
+
+        const nameOne = this.playerOne.name;
+        const nameTwo = this.playerTwo.name;
+
+        const players = {
+            "player-one": nameOne === "Player One" ? "" : nameOne,
+            "player-two": nameTwo === "Player Two" ? "" : nameTwo
+        };
+
+        this.playerForm.insertValues(players);
+    });
+
+    this.playerModal.addCallback("close", () => {
+        this.userButton.invertButton();
+
+        if (!this.playerOne) {
+            this.playerOne === new Player("Player One", "x");
+        }
+
+        if (!this.playerTwo) {
+            this.playerTwo === new Player("Player Two", "o");
+        }
+
+        this.playerForm.resetForm();
+    });
+
+    this.playerForm.changeSubmitListener(formData => {
+        this.updatePlayers(formData);
+    });
+
+    this.playerOneTurn = true;
+    this.board.updateClickListener(cell => {
+        this.playTurn(cell);
+    });
+
+    const players = JSON.parse(localStorage.getItem("players"));
+    if (!players) {
+        this.userButton.invertButton();
+        this.playerModal.showModal();    
+    } else {
+        [this.playerOne, this.playerTwo] = players;
+    }
 }
 
 Main.prototype.getElementById = function(id) {
@@ -54,57 +101,29 @@ Main.prototype.getElementById = function(id) {
     return element;
 }
 
-Main.prototype.initializeInputButtons = function() {
-    const resetButtonElement = this.getElementById("reset-button");
-    const resetButton = new Button(resetButtonElement);
-
-    const playButtonElement = this.getElementById("play-button");
-    const playButton = new Button(playButtonElement);
-
-    const userButtonElement = this.getElementById("user-button");
-    const userButton = new Button(userButtonElement);
-
-    return [resetButton, playButton, userButton];
-}
-
-Main.prototype.initializeModals = function() {
-    const resetModalElement = this.getElementById("reset-modal");
-    const resetModal = new Modal(resetModalElement);
-
-    return [resetModal];
-}
-
-Main.prototype.initializeResetModalButtons = function() {
-    const noResetButtonElement = this.getElementById("no-reset-button");
-    const noResetButton = new Button(noResetButtonElement);
-
-    const yesResetButtonElement = this.getElementById("yes-reset-button");
-    const yesResetButton = new Button(yesResetButtonElement);
-
-    return [noResetButton, yesResetButton];
-}
-
-Main.prototype.initializePlayers = function() {
-    const playerOne = new Player("Player One", "x");
-    const playerTwo = new Player("Player Two", "o");
-
-    const players = [playerOne, playerTwo];
-    if (!Array.isArray(players)) {
-        throw TypeError("players variable must be returned as an array.");
+Main.prototype.updatePlayers = function(formData) {
+    if (!(formData instanceof FormData) && !formData) {
+        throw TypeError("formData argument must be a FormData object.");
     }
 
-    return players;
-}
+    let nameOne = formData.get("player-one").trim();
+    let nameTwo = formData.get("player-two").trim();
 
-Main.prototype.initializeBoard = function() {
-    const container = this.getElementById("board-container");
-
-    const board = new Board(container);
-    if (!(board instanceof Board)) {
-        throw TypeError("board variable must be returned as a Board object.");
+    if (nameOne.length < 1) {
+        nameOne = "Player One";
     }
 
-    return board;
+    if (nameTwo.length < 1) {
+        nameTwo = "Player Two";
+    }
+
+    this.playerOne = new Player(nameOne, "x");
+    this.playerTwo = new Player(nameTwo, "o");
+
+    const players = [this.playerOne, this.playerTwo];
+    localStorage.setItem("players", JSON.stringify(players));
+
+    this.playerModal.closeModal();
 }
 
 Main.prototype.playTurn = function(cell) {
@@ -121,4 +140,42 @@ Main.prototype.playTurn = function(cell) {
     if (winner) {
         console.log(`${player.name} wins!`);
     }
+}
+
+Main.prototype.initializeButtons = function() {
+    const resetButtonElement = this.getElementById("reset-button");
+    this.resetButton = new Button(resetButtonElement);
+
+    const playButtonElement = this.getElementById("play-button");
+    this.playButton = new Button(playButtonElement);
+
+    const userButtonElement = this.getElementById("user-button");
+    this.userButton = new Button(userButtonElement);
+
+    const noResetButtonElement = this.getElementById("no-reset-button");
+    this.noResetButton = new Button(noResetButtonElement);
+
+    const yesResetButtonElement = this.getElementById("yes-reset-button");
+    this.yesResetButton = new Button(yesResetButtonElement);
+
+    const confirmPlayerButtonElement = this.getElementById("confirm-player-button");
+    this.confirmPlayerButton = new Button(confirmPlayerButtonElement);
+}
+
+Main.prototype.initializeModals = function() {
+    const resetModalElement = this.getElementById("reset-modal");
+    this.resetModal = new Modal(resetModalElement);
+
+    const playerModalElement = this.getElementById("player-modal");
+    this.playerModal = new Modal(playerModalElement);
+}
+
+Main.prototype.initializeForm = function() {
+    const playerFormElement = this.getElementById("player-form");
+    this.playerForm = new Form(playerFormElement);
+}
+
+Main.prototype.initializeBoard = function() {
+    const container = this.getElementById("board-container");
+    this.board = new Board(container);
 }

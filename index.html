@@ -38,6 +38,26 @@
                 </div>
             </div>
         </dialog>
+        <dialog id="player-modal" class="modal">
+            <form id="player-form" class="modal-container">
+                <button class="modal-close-button" type="button">
+                    <i class="modal-close-icon fa-solid fa-xmark"></i>
+                </button>
+                <div class="form-field">
+                    <label for="player-one" class="form-field-label">Player 1</label>
+                    <i class="form-field-icon fa-solid fa-x"></i>
+                    <input id="player-one" class="form-field-input" name="player-one" type="text" maxlength="10" placeholder="Zero">
+                </div>
+                <div class="form-field">
+                    <label for="player-two" class="form-field-label">Player 2</label>
+                    <i class="form-field-icon fa-solid fa-o"></i>
+                    <input id="player-two" class="form-field-input" name="player-two" type="text" maxlength="10" placeholder="Bloom">
+                </div>
+                <div class="button-container">
+                    <button id="confirm-player-button" class="blue-button" type="submit">Confirm</button>
+                </div>
+            </form>
+        </dialog>
         <script type="module" src="js/main.js" async defer></script>
     </body>
 </html>
