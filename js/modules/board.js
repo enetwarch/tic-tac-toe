@@ -32,96 +32,80 @@ export default function Board(element, size = 3) {
     }
 }
 
-Board.prototype.isPaused = function() {
-    return this.paused;
+Board.prototype.getState = function(state) {
+    if (!(state in this)) {
+        throw TypeError(`Invalid state: ${state}.`);
+    }
+
+    return this[state];
 }
 
-Board.prototype.isFinished = function() {
-    return this.finished;
-}
-
-Board.prototype.setPaused = function(value) {
-    if (typeof value !== "boolean") {
+Board.prototype.setState = function(state, value) {
+    if (!(state in this)) {
+        throw TypeError(`Invalid state: ${state}.`);
+    } else if (typeof value !== "boolean") {
         throw TypeError("value argument must be a boolean.");
     }
 
-    this.paused = value;
+    this[state] = value;
 }
 
-Board.prototype.setFinished = function(value) {
-    if (typeof value !== "boolean") {
-        throw TypeError("value argument must be a boolean.");
-    }
+Board.prototype.reset = function() {
+    this.paused = false;
+    this.finished = false;
 
-    this.finished = value;
+    const cells = this.grid.flat(1);
+    cells.forEach(cell => cell.reset());
 }
 
-Board.prototype.updateClickListener = function(callback) {
+Board.prototype.onCellClick = function(callback, cellQueryClass = ".board-cell") {
     if (typeof callback !== "function") {
         throw TypeError("callback argument needs to be a function.");
+    } else if (typeof cellQueryClass !== "string") {
+        throw TypeError("cellQueryClass argument needs to be a string.");
     }
 
-    if (this.listener) {
-        this.deleteClickListener();
+    if (this.clickCallback) {
+        this.element.removeEventListener("click", this.clickCallback);
     }
 
-    this.listener = event => {
-        const cellElement = event.target.closest(".board-cell");
-        if (!cellElement) {
-            return;
-        }
+    this.clickCallback = (event) => {
+        if (this.paused || this.finished) return;
+
+        const cellElement = event.target.closest(cellQueryClass);
+        if (!cellElement) return;
 
         const coordinates = JSON.parse(cellElement.dataset.coordinates);
         const cell = this.findCell(coordinates);
-
-        if (cell.mark !== "" || this.paused || this.finished) {
-            return;
-        }
+        if (cell.mark !== "") return;
 
         callback(cell);
-    }
+    };
 
-    this.element.addEventListener("click", this.listener);
+    this.element.addEventListener("click", this.clickCallback);
 }
 
-Board.prototype.deleteClickListener = function() {
-    if (!this.listener) {
-        return;
-    }
+Board.prototype.isValidCoordinates = function(coordinates) {
+    if (!Array.isArray(coordinates)) return false;
+    if (coordinates.length !== 2) return false;
+    if (!coordinates.every(coord => typeof coord === "number")) return false;
 
-    this.element.removeEventListener("click", this.listener);
-    this.listener = null;
+    const [x, y] = coordinates;
+    if (x < 0 || x >= this.size || y < 0 || y >= this.size) return false;
+
+    return true;
 }
 
-Board.prototype.resetBoard = function() {
-    if (this.paused) {
-        this.paused = false;
+Board.prototype.validateCoordinates = function(coordinates) {
+    if (!this.isValidCoordinates(coordinates)) {
+        throw TypeError(`Invalid coordinates: ${JSON.stringify(coordinates)}.`);
     }
-    
-    if (this.finished) {
-        this.finished = false;
-    }
-
-    const cells = this.grid.flat(1);
-    cells.forEach(cell => {
-        cell.resetMark();
-    });
 }
 
 Board.prototype.findCell = function(coordinates) {
-    if (!Array.isArray(coordinates)) {
-        throw TypeError("coordinates argument needs to be an array.");
-    } else if (coordinates.length !== 2) {
-        throw TypeError("coordinates argument must only contain 2 values");
-    } else if (!coordinates.every(coordinate => typeof coordinate === "number")) {
-        throw TypeError("coordinates argument needs to have number values");
-    }
+    this.validateCoordinates(coordinates);
 
     const [x, y] = coordinates;
-    if (x < 0 || x >= this.size || y < 0 || y >= this.size) {
-        throw RangeError("coordinates argument is out of bounds.");
-    }
-
     const cell = this.grid[x][y];
     if (!(cell instanceof Cell)) {
         throw TypeError("cell variable must be returned as a Cell object.");
@@ -130,68 +114,55 @@ Board.prototype.findCell = function(coordinates) {
     return cell;
 }
 
-Board.prototype.evaluateWinner = function(mark) {
+Board.prototype.isWinner = function(mark) {
     if (typeof mark !== "string") {
         throw TypeError("mark argument must be a string.");
     } else if (!(mark === "x" || mark === "o")) {
         throw TypeError(`mark argument must only be "x" or "o".`);
     }
 
-    const rows = this.grid.length;
-    const columns = this.grid[0].length;
-    const directions = this.directionalFunctions();
+    for (const cell of this.grid.flat(1)) {
+        if (cell.mark !== mark) continue;
 
-    let consecutiveMarks = 0;
-
-    for (let i = 0; i < rows * columns; i++) {
-        const x = Math.floor(i / columns);
-        const y = i % columns;
-
-        const cell = this.grid[x][y];
-        if (cell.mark !== mark) {
-            continue;
+        for (const direction of Board.DIRECTIONS) {
+            const consecutiveMarks = this.getConsecutiveMarks(direction, cell);
+            if (consecutiveMarks.length === this.size) return consecutiveMarks;
         }
-
-        consecutiveMarks++;
-        let directionIndex = 0;
-
-        while (directionIndex < directions.length) {
-            const direction = directions[directionIndex];
-            const [dx, dy] = direction(x, y, consecutiveMarks);
-
-            const outOfBounds = dx < 0 || dx >= rows || dy < 0 || dy >= columns;
-            const incorrectMark = !outOfBounds && this.grid[dx][dy].mark !== mark;
-
-            if (outOfBounds || incorrectMark) {
-                consecutiveMarks = 1;
-                directionIndex++;
-                continue;
-            }
-
-            consecutiveMarks++;
-            if (consecutiveMarks === this.size) {
-                this.finished = true;
-                return true;
-            }    
-        }
-
-        consecutiveMarks = 0;
     }
 
-    return false;
+    return null;
 }
 
-Board.prototype.directionalFunctions = function() {
-    const directions = [
-        (x, y, i) => [x - i, y],     // North
-        (x, y, i) => [x - i, y + i], // Northeast
-        (x, y, i) => [x, y + i],     // East
-        (x, y, i) => [x + i, y + i], // Southeast
-        (x, y, i) => [x + i, y],     // South
-        (x, y, i) => [x + i, y - i], // Southwest
-        (x, y, i) => [x, y - i],     // West
-        (x, y, i) => [x - i, y - i], // Northwest
-    ];
+Board.prototype.getConsecutiveMarks = function(direction, cell) {
+    if (typeof direction !== "function") {
+        throw TypeError("direction argument needs to be a function.");
+    } else if (!(cell instanceof Cell)) {
+        throw TypeError("cell argument must be a Cell object.");
+    }
 
-    return directions;
+    const [x, y] = cell.getCoordinates();
+    let consecutiveMarks = [];
+
+    for (let i = 0; i < this.size; i++) {
+        const [dx, dy] = direction(x, y, i);
+        if (!this.isValidCoordinates([dx, dy])) return consecutiveMarks;
+        
+        const dcell = this.grid[dx][dy];
+        if (dcell.mark !== cell.mark) return consecutiveMarks;
+
+        consecutiveMarks.push([dx, dy]);
+    }
+
+    return consecutiveMarks;
 }
+
+Board.DIRECTIONS = [
+    (x, y, i) => [x - i, y],     // North
+    (x, y, i) => [x - i, y + i], // Northeast
+    (x, y, i) => [x, y + i],     // East
+    (x, y, i) => [x + i, y + i], // Southeast
+    (x, y, i) => [x + i, y],     // South
+    (x, y, i) => [x + i, y - i], // Southwest
+    (x, y, i) => [x, y - i],     // West
+    (x, y, i) => [x - i, y - i], // Northwest
+];

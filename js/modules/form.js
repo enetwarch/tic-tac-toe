@@ -37,14 +37,14 @@ Form.prototype.onSubmit = function(submit) {
         this.element.removeEventListener("submit", this.submitCallback);
     }
 
-    this.submitCallback = function(event) {
+    this.submitCallback = (event) => {
         event.preventDefault();
 
         const formData = new FormData(this.element);
         submit(formData);
 
         this.reset();
-    }.bind(this);
+    };
 
     this.element.addEventListener("submit", this.submitCallback);
 }

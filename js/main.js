@@ -39,7 +39,7 @@ function Main() {
     this.playerForm.onSubmit(this.updatePlayers.bind(this));
 
     this.playerOneTurn = true;
-    this.board.updateClickListener(this.playTurn.bind(this));
+    this.board.onCellClick(this.playTurn.bind(this));
 
     const players = JSON.parse(localStorage.getItem("players"));
     if (!players) {
@@ -81,7 +81,7 @@ Main.prototype.clickNoResetButton = function() {
 }
 
 Main.prototype.clickYesResetButton = function() {
-    this.board.resetBoard();
+    this.board.reset();
     this.resetModal.closeModal();
 }
 
@@ -91,11 +91,11 @@ Main.prototype.togglePlayButton = function() {
     if (this.playButton.isToggled()) {
         this.playButton.changeIcon("fa-pause");
 
-        this.board.setPaused(false);
+        this.board.setState("paused", false);
     } else {
         this.playButton.changeIcon("fa-play");
 
-        this.board.setPaused(true);
+        this.board.setState("paused", true);
     }
 }
 
@@ -210,10 +210,11 @@ Main.prototype.playTurn = function(cell) {
     const player = this.playerOneTurn ? this.playerOne : this.playerTwo;
     this.playerOneTurn = !this.playerOneTurn;
 
-    cell.updateMark(player.mark);
+    cell.setMark(player.mark);
 
-    const winner = this.board.evaluateWinner(player.mark);
+    const winner = this.board.isWinner(player.mark);
     if (winner) {
+        this.board.setState("finished", true);
         console.log(`${player.name} won!`);
     }
 }
