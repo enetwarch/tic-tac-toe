@@ -36,7 +36,7 @@ function Main() {
     this.userButton.addListener("click", this.clickUserButton.bind(this));
     this.playerModal.addCallback("open", this.openPlayerModal.bind(this));
     this.playerModal.addCallback("close", this.closePlayerModal.bind(this));
-    this.playerForm.changeSubmitListener(this.updatePlayers.bind(this));
+    this.playerForm.onSubmit(this.updatePlayers.bind(this));
 
     this.playerOneTurn = true;
     this.board.updateClickListener(this.playTurn.bind(this));
@@ -151,8 +151,8 @@ Main.prototype.openPlayerModal = function() {
     const nameTwo = this.playerTwo.name;
 
     const players = {
-        "player-one": nameOne === "Player One" ? "" : nameOne,
-        "player-two": nameTwo === "Player Two" ? "" : nameTwo
+        "playerOne": nameOne === "Player One" ? "" : nameOne,
+        "playerTwo": nameTwo === "Player Two" ? "" : nameTwo
     };
 
     this.playerForm.insertValues(players);
@@ -170,7 +170,7 @@ Main.prototype.closePlayerModal = function() {
     const players = [this.playerOne, this.playerTwo];
     localStorage.setItem("players", JSON.stringify(players));
 
-    this.playerForm.resetForm();
+    this.playerForm.reset();
 
     if (this.userButton.isToggled()) {
         this.clickUserButton();
@@ -182,8 +182,8 @@ Main.prototype.updatePlayers = function(formData) {
         throw TypeError("formData argument must be a FormData object.");
     }
 
-    let nameOne = formData.get("player-one").trim();
-    let nameTwo = formData.get("player-two").trim();
+    let nameOne = formData.get("playerOne").trim();
+    let nameTwo = formData.get("playerTwo").trim();
 
     if (nameOne.length === 0) {
         nameOne = "Player One";
