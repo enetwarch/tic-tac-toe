@@ -2,22 +2,45 @@ import elements from "./data/elements.json" with { "type": "json" };
 import Button from "./modules/button.js";
 import Modal from "./modules/modal.js";
 import Form from "./modules/form.js";
-import Board from "./modules/board.js";
+import Game from "./controllers/game.js";
 import Cell from "./modules/cell.js";
 import Player from "./modules/player.js";
 
 window.addEventListener("load", () => {
-    const main = new Main();
+    const storedPlayers = JSON.parse(localStorage.getItem("players"));
+    let players;
 
-    if (main.playerOne && main.playerTwo) {
+    if (storedPlayers) {
+        players = storedPlayers.map(data => new Player(data.name, data.mark));
+    } else {
+        players = [
+            new Player ("Player 1", "x", true),
+            new Player ("Player 2", "o", false)
+        ];
+
+        localStorage.setItem("players", JSON.stringify(players));
+    }
+
+    const game = new Game(players, players.length, 3);
+    const main = new Main(game);
+
+    if (players.every((player, i) => player.getName() === `Player ${i + 1}`)) {
+        main.clickUserButton();
+    } else {
         main.clickPlayButton();
     }
 });
 
-function Main() {
+function Main(game) {
     if (!new.target) {
         throw Error(`Use the "new" keyword on the Main constructor.`);
     }
+
+    if (!(game instanceof Game)) {
+        throw TypeError("game argument must be a Game object.");
+    }
+
+    this.game = game;
 
     this.initializeElements(elements);
     
@@ -37,17 +60,6 @@ function Main() {
     this.playerModal.addCallback("open", this.openPlayerModal.bind(this));
     this.playerModal.addCallback("close", this.closePlayerModal.bind(this));
     this.playerForm.onSubmit(this.updatePlayers.bind(this));
-
-    this.playerOneTurn = true;
-    this.board.onCellClick(this.playTurn.bind(this));
-
-    const players = JSON.parse(localStorage.getItem("players"));
-    if (!players) {
-        this.userButton.invertButton();
-        this.playerModal.showModal();    
-    } else {
-        [this.playerOne, this.playerTwo] = players;
-    }
 }
 
 Main.prototype.toggleResetButton = function() {
@@ -81,7 +93,7 @@ Main.prototype.clickNoResetButton = function() {
 }
 
 Main.prototype.clickYesResetButton = function() {
-    this.board.reset();
+    this.game.reset();
     this.resetModal.closeModal();
 }
 
@@ -90,12 +102,10 @@ Main.prototype.togglePlayButton = function() {
 
     if (this.playButton.isToggled()) {
         this.playButton.changeIcon("fa-pause");
-
-        this.board.setState("paused", false);
+        this.game.setPaused(false);
     } else {
         this.playButton.changeIcon("fa-play");
-
-        this.board.setState("paused", true);
+        this.game.setPaused(true);
     }
 }
 
@@ -151,8 +161,8 @@ Main.prototype.openPlayerModal = function() {
     const nameTwo = this.playerTwo.name;
 
     const players = {
-        "playerOne": nameOne === "Player One" ? "" : nameOne,
-        "playerTwo": nameTwo === "Player Two" ? "" : nameTwo
+        "playerOne": nameOne === "Player 1" ? "" : nameOne,
+        "playerTwo": nameTwo === "Player 2" ? "" : nameTwo
     };
 
     this.playerForm.insertValues(players);
@@ -160,11 +170,11 @@ Main.prototype.openPlayerModal = function() {
 
 Main.prototype.closePlayerModal = function() {
     if (!this.playerOne) {
-        this.playerOne = new Player("Player One", "x");
+        this.playerOne = new Player("Player 1", "x");
     }
 
     if (!this.playerTwo) {
-        this.playerTwo = new Player("Player Two", "o");
+        this.playerTwo = new Player("Player 2", "o");
     }
 
     const players = [this.playerOne, this.playerTwo];
@@ -186,11 +196,11 @@ Main.prototype.updatePlayers = function(formData) {
     let nameTwo = formData.get("playerTwo").trim();
 
     if (nameOne.length === 0) {
-        nameOne = "Player One";
+        nameOne = "Player 1";
     }
 
     if (nameTwo.length === 0) {
-        nameTwo = "Player Two";
+        nameTwo = "Player 2";
     }
 
     this.playerOne = new Player(nameOne, "x");
@@ -268,7 +278,6 @@ Main.prototype.elementFactory = function(type, element) {
         case "button": return new Button(element);
         case "modal": return new Modal(element);
         case "form": return new Form(element);
-        case "board": return new Board(element);
 
         default: throw TypeError(`Unknown type: "${type}".`);
     }

@@ -38,9 +38,5 @@
     {
         "id": "playerForm",
         "type": "form"
-    },
-    {
-        "id": "board",
-        "type": "board"
     }
 ]

@@ -24,11 +24,16 @@ export default function Cell(coordinates, elementClass = "board-cell") {
     this.mark = "";
 }
 
-Cell.prototype.reset = function() {
-    if (this.mark === "") return;
+Cell.prototype.getElement = function() {
+    return this.element;
+}
 
-    this.icon.className = "";
-    this.mark = "";
+Cell.prototype.getCoordinates = function() {
+    return JSON.parse(this.element.dataset.coordinates);
+}
+
+Cell.prototype.getMark = function() {
+    return this.mark;
 }
 
 Cell.prototype.setMark = function(mark) {
@@ -40,8 +45,11 @@ Cell.prototype.setMark = function(mark) {
     this.mark = mark;
 }
 
-Cell.prototype.getCoordinates = function() {
-    return JSON.parse(this.element.dataset.coordinates);
+Cell.prototype.reset = function() {
+    if (this.mark === "") return;
+
+    this.icon.className = "";
+    this.mark = "";
 }
 
 Cell.getMarkClasses = function(mark) {
