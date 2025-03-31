@@ -8,6 +8,10 @@ import Player from "./modules/player.js";
 
 window.addEventListener("load", () => {
     const main = new Main();
+
+    if (main.playerOne && main.playerTwo) {
+        main.clickPlayButton();
+    }
 });
 
 function Main() {
@@ -17,11 +21,18 @@ function Main() {
 
     this.initializeElements(elements);
     
+    this.resetButton.addToggleState(this.toggleResetButton.bind(this));
     this.resetButton.addListener("click", this.clickResetButton.bind(this));
     this.resetModal.addCallback("close", this.closeResetModal.bind(this));
     this.noResetButton.addListener("click", this.clickNoResetButton.bind(this));
     this.yesResetButton.addListener("click", this.clickYesResetButton.bind(this));
 
+    this.playButton.addToggleState(this.togglePlayButton.bind(this));
+    this.playButton.addListener("click", this.clickPlayButton.bind(this));
+    document.addEventListener("keydown", this.keydownPlayButton.bind(this));
+    document.addEventListener("keyup", this.keyupPlayButton.bind(this));
+
+    this.userButton.addToggleState(this.toggleUserButton.bind(this));
     this.userButton.addListener("click", this.clickUserButton.bind(this));
     this.playerModal.addCallback("open", this.openPlayerModal.bind(this));
     this.playerModal.addCallback("close", this.closePlayerModal.bind(this));
@@ -39,13 +50,30 @@ function Main() {
     }
 }
 
-Main.prototype.clickResetButton = function() {
+Main.prototype.toggleResetButton = function() {
     this.resetButton.invertButton();
-    this.resetModal.showModal();
+
+    if (this.resetButton.isToggled()) {
+        this.resetModal.showModal();
+
+        if (this.playButton.isToggled()) {
+            this.clickPlayButton();
+        }
+    } else {
+        if (!this.playButton.isToggled()) {
+            this.clickPlayButton();
+        }
+    }
+}
+
+Main.prototype.clickResetButton = function() {
+    this.resetButton.toggleButton();
 }
 
 Main.prototype.closeResetModal = function() {
-    this.resetButton.invertButton();
+    if (this.resetButton.isToggled()) {
+        this.clickResetButton();
+    }
 }
 
 Main.prototype.clickNoResetButton = function() {
@@ -57,9 +85,61 @@ Main.prototype.clickYesResetButton = function() {
     this.resetModal.closeModal();
 }
 
-Main.prototype.clickUserButton = function() {
+Main.prototype.togglePlayButton = function() {
+    this.playButton.invertButton();
+
+    if (this.playButton.isToggled()) {
+        this.playButton.changeIcon("fa-pause");
+
+        this.board.setPaused(false);
+    } else {
+        this.playButton.changeIcon("fa-play");
+
+        this.board.setPaused(true);
+    }
+}
+
+Main.prototype.clickPlayButton = function() {
+    this.playButton.toggleButton();
+}
+
+Main.prototype.keydownPlayButton = function(event) {
+    if (event.code !== "Space" || this.spaceKeydown) {
+        return;
+    }
+
+    this.spaceKeydown = true;
+
+    document.activeElement.blur();
+    this.clickPlayButton();
+}
+
+Main.prototype.keyupPlayButton = function(event) {
+    if (event.code !== "Space") {
+        return;
+    }
+
+    this.spaceKeydown = false;
+}
+
+Main.prototype.toggleUserButton = function() {
     this.userButton.invertButton();
-    this.playerModal.showModal();
+
+    if (this.userButton.isToggled()) {
+        this.playerModal.showModal();
+
+        if (this.playButton.isToggled()) {
+            this.clickPlayButton();
+        }
+    } else {
+        if (!this.playButton.isToggled()) {
+            this.clickPlayButton();
+        }
+    }
+}
+
+Main.prototype.clickUserButton = function() {
+    this.userButton.toggleButton();    
 }
 
 Main.prototype.openPlayerModal = function() {
@@ -79,8 +159,6 @@ Main.prototype.openPlayerModal = function() {
 }
 
 Main.prototype.closePlayerModal = function() {
-    this.userButton.invertButton();
-
     if (!this.playerOne) {
         this.playerOne = new Player("Player One", "x");
     }
@@ -93,7 +171,11 @@ Main.prototype.closePlayerModal = function() {
     localStorage.setItem("players", JSON.stringify(players));
 
     this.playerForm.resetForm();
-}
+
+    if (this.userButton.isToggled()) {
+        this.clickUserButton();
+    }
+}   
 
 Main.prototype.updatePlayers = function(formData) {
     if (!(formData instanceof FormData) && !formData) {
@@ -103,11 +185,11 @@ Main.prototype.updatePlayers = function(formData) {
     let nameOne = formData.get("player-one").trim();
     let nameTwo = formData.get("player-two").trim();
 
-    if (nameOne.length < 1) {
+    if (nameOne.length === 0) {
         nameOne = "Player One";
     }
 
-    if (nameTwo.length < 1) {
+    if (nameTwo.length === 0) {
         nameTwo = "Player Two";
     }
 
@@ -132,7 +214,7 @@ Main.prototype.playTurn = function(cell) {
 
     const winner = this.board.evaluateWinner(player.mark);
     if (winner) {
-        console.log(`${player.name} wins!`);
+        console.log(`${player.name} won!`);
     }
 }
 

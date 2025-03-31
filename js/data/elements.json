@@ -28,6 +28,10 @@
         "type": "modal"
     },
     {
+        "id": "winnerModal",
+        "type": "modal"
+    },
+    {
         "id": "playerModal",
         "type": "modal"
     },

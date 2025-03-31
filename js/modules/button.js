@@ -11,6 +11,28 @@ export default function Button(element) {
     this.listeners = [];
 }
 
+Button.prototype.addToggleState = function(callback) {
+    if (typeof callback !== "function") {
+        throw TypeError("callback argument must be a function.");
+    }
+
+    this.toggled = false;
+    this.toggleState = callback;
+}
+
+Button.prototype.toggleButton = function() {
+    if (!this.toggleState) {
+        throw Error(`${this.element} does not have a toggle state.`);
+    }
+
+    this.toggled = !this.toggled;
+    this.toggleState();
+}
+
+Button.prototype.isToggled = function() {
+    return this.toggled;
+}
+
 Button.prototype.addListener = function(type, callback) {
     if (typeof type !== "string") {
         throw TypeError("type argument must be a string.");
@@ -41,4 +63,21 @@ Button.prototype.removeListeners = function() {
     });
 
     this.listeners = [];
+}
+
+Button.prototype.changeIcon = function(className) {
+    if (typeof className !== "string") {
+        throw TypeError("className argument must be a string.");
+    }
+
+    const icon = this.element.querySelector("i");
+    if (!icon) {
+        throw Error(`${this.element} does not have an icon.`);
+    } else if (icon.classList.length === 0) {
+        throw Error(`${icon} icon does not have any class.`);
+    }
+
+    const lastElement = icon.classList[icon.classList.length - 1];
+    icon.classList.remove(lastElement);
+    icon.classList.add(className);
 }

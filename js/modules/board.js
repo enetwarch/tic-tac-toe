@@ -14,7 +14,9 @@ export default function Board(element, size = 3) {
     this.element = element;
     this.size = size;
 
+    this.paused = false;
     this.finished = false;
+
     this.grid = [];
 
     for (let x = 0; x < this.size; x++) {
@@ -28,6 +30,30 @@ export default function Board(element, size = 3) {
             this.element.appendChild(cell.element);
         }
     }
+}
+
+Board.prototype.isPaused = function() {
+    return this.paused;
+}
+
+Board.prototype.isFinished = function() {
+    return this.finished;
+}
+
+Board.prototype.setPaused = function(value) {
+    if (typeof value !== "boolean") {
+        throw TypeError("value argument must be a boolean.");
+    }
+
+    this.paused = value;
+}
+
+Board.prototype.setFinished = function(value) {
+    if (typeof value !== "boolean") {
+        throw TypeError("value argument must be a boolean.");
+    }
+
+    this.finished = value;
 }
 
 Board.prototype.updateClickListener = function(callback) {
@@ -48,11 +74,7 @@ Board.prototype.updateClickListener = function(callback) {
         const coordinates = JSON.parse(cellElement.dataset.coordinates);
         const cell = this.findCell(coordinates);
 
-        if (cell.mark !== "") {
-            return;
-        }
-
-        if (this.finished) {
+        if (cell.mark !== "" || this.paused || this.finished) {
             return;
         }
 
@@ -72,6 +94,10 @@ Board.prototype.deleteClickListener = function() {
 }
 
 Board.prototype.resetBoard = function() {
+    if (this.paused) {
+        this.paused = false;
+    }
+    
     if (this.finished) {
         this.finished = false;
     }
@@ -157,14 +183,14 @@ Board.prototype.evaluateWinner = function(mark) {
 
 Board.prototype.directionalFunctions = function() {
     const directions = [
-        (x, y, i) => [x - i, y - i], // Northwest
         (x, y, i) => [x - i, y],     // North
         (x, y, i) => [x - i, y + i], // Northeast
-        (x, y, i) => [x, y - i],     // West
         (x, y, i) => [x, y + i],     // East
-        (x, y, i) => [x + i, y - i], // Southwest
+        (x, y, i) => [x + i, y + i], // Southeast
         (x, y, i) => [x + i, y],     // South
-        (x, y, i) => [x + i, y + i]  // Southeast
+        (x, y, i) => [x + i, y - i], // Southwest
+        (x, y, i) => [x, y - i],     // West
+        (x, y, i) => [x - i, y - i], // Northwest
     ];
 
     return directions;
