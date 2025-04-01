@@ -24,15 +24,19 @@
         "type": "button"
     },
     {
+        "id": "okWinnerButton",
+        "type": "button"
+    },
+    {
         "id": "resetModal",
         "type": "modal"
     },
     {
-        "id": "winnerModal",
+        "id": "playerModal",
         "type": "modal"
     },
     {
-        "id": "playerModal",
+        "id": "winnerModal",
         "type": "modal"
     },
     {

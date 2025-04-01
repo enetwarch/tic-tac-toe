@@ -31,23 +31,19 @@ export default function Modal(element, containerQuery = ".modal-container", clos
 }
 
 Modal.prototype.show = function() {
-    if (this.shown) return;
+    if (this.isShown()) return;
 
     this.setShown(true);
     this.element.showModal();
-
-    const event = new Event("show");
-    this.element.dispatchEvent(event);
+    this.element.dispatchEvent(new Event("show"));
 }
 
 Modal.prototype.close = function() {
-    if (!this.shown) return;
+    if (!this.isShown()) return;
 
     this.setShown(false);
     this.element.close();
-
-    const event = new Event("close");
-    this.element.dispatchEvent(event);
+    this.element.dispatchEvent(new Event("close"));
 }
 
 Modal.prototype.isShown = function() {

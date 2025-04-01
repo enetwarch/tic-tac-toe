@@ -40,19 +40,6 @@
                 </div>
             </div>
         </dialog>
-        <dialog id="winnerModal" class="modal">
-            <div class="modal-container">
-                <button class="modal-close-button" type="button">
-                    <i class="modal-close-icon fa-solid fa-xmark"></i>
-                </button>
-                <div class="information-container">
-                    <p id="winnerText" class="information-text">Player One won!</p>
-                </div>
-                <div class="button-container">
-                    <button id="confirmWinnerButton" class="blue-button" type="button">Ok</button>
-                </div>
-            </div>
-        </dialog>
         <dialog id="playerModal" class="modal">
             <form id="playerForm" class="modal-container">
                 <button class="modal-close-button" type="button">
@@ -72,6 +59,21 @@
                     <button id="confirmPlayerButton" class="blue-button" type="submit">Confirm</button>
                 </div>
             </form>
+        </dialog>
+        <dialog id="winnerModal" class="modal">
+            <div class="modal-container">
+                <button class="modal-close-button" type="button">
+                    <i class="modal-close-icon fa-solid fa-xmark"></i>
+                </button>
+                <div class="information-container">
+                    <p id="winnerText" class="information-text">
+                        
+                    </p>
+                </div>
+                <div class="button-container">
+                    <button id="okWinnerButton" class="blue-button" type="button">Ok</button>
+                </div>
+            </div>
         </dialog>
         <script type="module" src="js/main.js" async defer></script>
     </body>

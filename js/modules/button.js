@@ -9,6 +9,7 @@ export default function Button(element) {
 
     this.element = element;
     this.toggled = false;
+    this.enabled = true;
 }
 
 Button.prototype.addEventListener = function(type, callback) {
@@ -39,9 +40,7 @@ Button.prototype.toggle = function(invertClass = "inverted") {
     }
 
     this.setToggled(!this.isToggled());
-
-    const event = new Event("toggle");
-    this.element.dispatchEvent(event);
+    this.element.dispatchEvent(new Event("toggle"));
 
     this.invert(invertClass);
 }
@@ -56,6 +55,18 @@ Button.prototype.setToggled = function(value) {
     }
 
     this.toggled = value;
+}
+
+Button.prototype.enable = function() {
+    this.enabled = true;
+}
+
+Button.prototype.disable = function() {
+    this.enabled = false;
+}
+
+Button.prototype.isEnabled = function() {
+    return this.enabled;
 }
 
 Button.prototype.invert = function(invertClass = "inverted") {

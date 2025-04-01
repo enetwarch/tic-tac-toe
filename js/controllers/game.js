@@ -88,9 +88,11 @@ Game.prototype.playTurn = function(cell) {
     const winner = this.board.isWinner(currentPlayer.getMark());
     if (winner) {
         this.setFinished(true);
-
-        const event = new Event("gameover");
-        document.dispatchEvent(event);
+        document.dispatchEvent(new CustomEvent("gameover", {
+            "detail": {
+                "winner": currentPlayer.getName(),
+            }
+        }));
 
         return;
     }

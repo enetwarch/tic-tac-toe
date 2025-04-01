@@ -98,6 +98,10 @@ UI.prototype.initializeListeners = function() {
     this.playerModal.addEventListener("show", this.onPlayerModalShow.bind(this));
     this.playerModal.addEventListener("close", this.onPlayerModalClose.bind(this));
     this.playerForm.onSubmit(this.onPlayerFormSubmit.bind(this));
+
+    document.addEventListener("gameover", this.onDocumentGameover.bind(this));
+    this.winnerModal.addEventListener("close", this.onWinnerModalClose.bind(this));
+    this.okWinnerButton.addEventListener("click", this.onOkWinnerButtonClick.bind(this));
 }
 
 UI.prototype.onResetButtonToggle = function() {
@@ -129,27 +133,26 @@ UI.prototype.onNoResetButtonClick = function() {
 }
 
 UI.prototype.onYesResetButtonClick = function() {
-    const event = new Event("gamereset");
-    document.dispatchEvent(event);
+    if (!this.playButton.isEnabled()) {
+        this.playButton.enable();
+    }
 
+    document.dispatchEvent(new Event("gamereset"));
     this.resetModal.close();
 }
 
 UI.prototype.onPlayButtonToggle = function() {
     if (this.playButton.isToggled()) {
         this.playButton.changeIcon("fa-pause");
-
-        const event = new Event("gameresume");
-        document.dispatchEvent(event);
+        document.dispatchEvent(new Event("gameresume"));
     } else {
         this.playButton.changeIcon("fa-play");
-
-        const event = new Event("gamepause");
-        document.dispatchEvent(event);
+        document.dispatchEvent(new Event("gamepause"));
     }
 }
 
 UI.prototype.onPlayButtonClick = function() {
+    if (!this.playButton.isEnabled()) return;
     this.playButton.toggle();
 }
 
@@ -228,8 +231,42 @@ UI.prototype.onPlayerFormSubmit = function(formData) {
         console.error(`Local storage failed to save: ${error} error.`);
     }
 
-    const event = new Event("gamereset");
-    document.dispatchEvent(event);
-
+    document.dispatchEvent(new Event("gamereset"));
     this.playerModal.close();
+}
+
+UI.prototype.onDocumentGameover = function(event) {
+    if (!("detail" in event)) {
+        throw TypeError(`event argument must have a "detail" key.`);
+    } else if (!("winner" in event.detail)) {
+        throw TypeError(`event argument detail must have a "winner" key.`);
+    } else if (typeof event.detail.winner !== "string") {
+        throw TypeError(`event argument detail winner must be a string.`);
+    } else if (!this.players.map(player => player.getName()).includes(event.detail.winner)) {
+        throw TypeError(`event argument detail winner is not a known player: ${event.detail.winner}.`);
+    }
+
+    const winnerText = UI.getElementById("winnerText");
+    winnerText.innerText = `${event.detail.winner} won!`;
+
+    this.winnerModal.show();
+
+    if (this.playButton.isToggled()) {
+        this.playButton.click();
+    }
+    
+    this.playButton.disable();
+}
+
+UI.prototype.onWinnerModalClose = function() {
+    const winnerText = UI.getElementById("winnerText");
+    winnerText.innerText = "";
+
+    if (!this.resetButton.isToggled()) {
+        this.resetButton.click();
+    }
+}
+
+UI.prototype.onOkWinnerButtonClick = function() {
+    this.winnerModal.close();
 }
