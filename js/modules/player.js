@@ -54,3 +54,16 @@ Player.prototype.setTurn = function(turn) {
 
     this.turn = turn;
 }
+
+Player.getPlayersFromStorage = function() {
+    const storedPlayers = JSON.parse(localStorage.getItem("players"));
+    if (!storedPlayers) {
+        return storedPlayers;
+    }
+
+    
+}
+
+Player.setPlayersFromStorage = function() {
+    
+}

@@ -1,105 +1,100 @@
-export default function Modal(element) {
+export default function Modal(element, containerQuery = ".modal-container", closeButtonQuery = ".modal-close-button") {
     if (!new.target) {
         throw Error(`Use the "new" keyword on the Modal constructor.`);
     }
 
-    this.element = element;
-    if (!(this.element instanceof HTMLElement)) {
+    if (!(element instanceof HTMLElement)) {
         throw TypeError("element argument must be an HTML element.");
+    } else if (typeof containerQuery !== "string") {
+        throw TypeError("containerQuery argument must be a string.");
+    } else if (typeof closeButtonQuery !== "string") {
+        throw TypeError("closeButtonQuery argument must be a string.");
     }
 
-    this.container = this.element.querySelector(".modal-container");
+    this.element = element;
+
+    this.container = this.element.querySelector(containerQuery);
     if (!this.container) {
-        throw TypeError(`${this.element} does not have a container.`);
+        throw TypeError(`element argument does not have a container with "${containerQuery}" query.`);
     }
 
-    this.closeButton = this.element.querySelector(".modal-close-button");
+    this.closeButton = this.element.querySelector(closeButtonQuery);
     if (!this.closeButton) {
-        throw TypeError(`${this.element} does not have a close button.`);
+        throw TypeError(`element argument does not have a close button with "${closeButtonQuery}" query.`);
     }
 
-    this.isShown = false;
-    this.callback = {
-        "open": undefined,
-        "close": undefined
-    };
+    this.shown = false;
 
-    this.addListeners();
+    document.addEventListener("keydown", this.onEscapeKey.bind(this));
+    this.element.addEventListener("click", this.onOverlayClick.bind(this));
+    this.closeButton.addEventListener("click", this.onCloseButtonClick.bind(this));
 }
 
-Modal.prototype.addListeners = function() {
-    document.addEventListener("keydown", event => {
-        if (event.code !== "Escape") {
-            return;
-        }
+Modal.prototype.show = function() {
+    if (this.shown) return;
 
-        if (!this.isShown) {
-            return;
-        }
-
-        event.preventDefault();
-        this.closeModal();
-    });
-
-    this.element.addEventListener("click", event => {
-        if (event.target !== this.element) {
-            return;
-        }
-
-        this.closeModal();
-    });
-
-    this.closeButton.addEventListener("click", () => {
-        this.closeModal();
-    });
-}
-
-Modal.prototype.showModal = function() {
-    this.isShown = true;
-
-    this.executeCallback("open");
+    this.setShown(true);
     this.element.showModal();
+
+    const event = new Event("show");
+    this.element.dispatchEvent(event);
 }
 
-Modal.prototype.closeModal = function() {
-    this.isShown = false;
+Modal.prototype.close = function() {
+    if (!this.shown) return;
 
-    this.executeCallback("close");
+    this.setShown(false);
     this.element.close();
+
+    const event = new Event("close");
+    this.element.dispatchEvent(event);
 }
 
-Modal.prototype.addCallback = function(type, callback) {
+Modal.prototype.isShown = function() {
+    return this.shown;
+}
+
+Modal.prototype.setShown = function(value) {
+    if (typeof value !== "boolean") {
+        throw TypeError("value argument must be a boolean.");
+    }
+
+    this.shown = value;
+}
+
+Modal.prototype.addEventListener = function(type, callback) {
+    Modal.validateEventListenerArguments(type, callback);
+    this.element.addEventListener(type, callback);
+}
+
+Modal.prototype.removeEventListener = function(type, callback) {
+    Modal.validateEventListenerArguments(type, callback);
+    this.element.removeEventListener(type, callback);
+}
+
+Modal.validateEventListenerArguments = function(type, callback) {
     if (typeof type !== "string") {
         throw TypeError("type argument must be a string.");
-    } else if (!(type === "open" || type === "close")) {
-        throw TypeError(`type argument must be "open" or "close".`);
+    } else if (!["show", "close"].includes(type)) {
+        throw TypeError(`type argument must only be "show" or "close"`);
     } else if (typeof callback !== "function") {
         throw TypeError("callback argument must be a function.");
     }
-
-    this.callback[type] = callback;
 }
 
-Modal.prototype.removeCallback = function(type) {
-    if (typeof type !== "string") {
-        throw TypeError("type argument must be a string.");
-    } else if (!(type === "open" || type === "close")) {
-        throw TypeError(`type argument must be "open" or "close".`);
+Modal.prototype.onEscapeKey = function(event) {
+    if (event.code === "Escape" && this.isShown()) {
+        event.preventDefault();
+        this.close();
     }
-
-    this.callback[type] = () => {}
 }
 
-Modal.prototype.executeCallback = function(type) {
-    if (typeof type !== "string") {
-        throw TypeError("type argument must be a string.");
-    } else if (!(type === "open" || type === "close")) {
-        throw TypeError(`type argument must be "open" or "close".`);
+Modal.prototype.onOverlayClick = function(event) {
+    if (event.target === this.element) {
+        this.close();
     }
+}
 
-    if (!this.callback[type]) {
-        return;
-    }
-
-    this.callback[type]();
+Modal.prototype.onCloseButtonClick = function() {
+    this.close();
 }

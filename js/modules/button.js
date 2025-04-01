@@ -8,65 +8,66 @@ export default function Button(element) {
     }
 
     this.element = element;
-    this.listeners = [];
+    this.toggled = false;
 }
 
-Button.prototype.addToggleState = function(callback) {
-    if (typeof callback !== "function") {
+Button.prototype.addEventListener = function(type, callback) {
+    Button.validateEventListenerArguments(type, callback);
+    this.element.addEventListener(type, callback);
+}
+
+Button.prototype.removeEventListener = function(type, callback) {
+    Button.validateEventListenerArguments(type, callback);
+    this.element.removeEventListener(type, callback);
+}
+
+Button.validateEventListenerArguments = function(type, callback) {
+    if (typeof type !== "string") {
+        throw TypeError("type argument must be a string.");
+    } else if (typeof callback !== "function") {
         throw TypeError("callback argument must be a function.");
     }
-
-    this.toggled = false;
-    this.toggleState = callback;
 }
 
-Button.prototype.toggleButton = function() {
-    if (!this.toggleState) {
-        throw Error(`${this.element} does not have a toggle state.`);
+Button.prototype.click = function() {
+    this.element.click();
+}
+
+Button.prototype.toggle = function(invertClass = "inverted") {
+    if (typeof invertClass !== "string") {
+        throw TypeError("invertClass argument needs to be a string.");
     }
 
-    this.toggled = !this.toggled;
-    this.toggleState();
+    this.setToggled(!this.isToggled());
+
+    const event = new Event("toggle");
+    this.element.dispatchEvent(event);
+
+    this.invert(invertClass);
 }
 
 Button.prototype.isToggled = function() {
     return this.toggled;
 }
 
-Button.prototype.addListener = function(type, callback) {
-    if (typeof type !== "string") {
-        throw TypeError("type argument must be a string.");
-    } else if (typeof callback !== "function") {
-        throw TypeError("callback argumnent must be a function.");
+Button.prototype.setToggled = function(value) {
+    if (typeof value !== "boolean") {
+        throw TypeError("value argument must be a boolean.");
     }
 
-    this.listeners.push([type, callback]);
-    this.element.addEventListener(type, callback);
+    this.toggled = value;
 }
 
-Button.prototype.invertButton = function(className = "inverted") {
-    if (typeof className !== "string") {
+Button.prototype.invert = function(invertClass = "inverted") {
+    if (typeof invertClass !== "string") {
         throw TypeError("className argument must be a string.");
     }
 
-    this.element.classList.toggle(className);
+    this.element.classList.toggle(invertClass);
 }
 
-Button.prototype.removeListeners = function() {
-    if (!this.listener) {
-        return;
-    }
-
-    this.listeners.forEach(listener => {
-        const [type, callback] = listener;
-        this.removeEventListener(type, callback);
-    });
-
-    this.listeners = [];
-}
-
-Button.prototype.changeIcon = function(className) {
-    if (typeof className !== "string") {
+Button.prototype.changeIcon = function(iconClass) {
+    if (typeof iconClass !== "string") {
         throw TypeError("className argument must be a string.");
     }
 
@@ -79,5 +80,5 @@ Button.prototype.changeIcon = function(className) {
 
     const lastElement = icon.classList[icon.classList.length - 1];
     icon.classList.remove(lastElement);
-    icon.classList.add(className);
+    icon.classList.add(iconClass);
 }

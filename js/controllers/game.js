@@ -30,6 +30,10 @@ export default function Game(players, playerCount = 2, boardSize = 3) {
     this.paused = false;
     this.finished = false;
 
+    document.addEventListener("gamepause", () => this.setPaused(true));
+    document.addEventListener("gameresume", () => this.setPaused(false));    
+    document.addEventListener("gamereset", this.reset.bind(this));
+
     this.reset();
 }
 
@@ -58,7 +62,7 @@ Game.prototype.setFinished = function(value) {
 }
 
 Game.prototype.reset = function() {
-    this.setPaused(false);
+    this.setPaused(true);
     this.setFinished(false);
 
     this.board.reset();
@@ -84,7 +88,9 @@ Game.prototype.playTurn = function(cell) {
     const winner = this.board.isWinner(currentPlayer.getMark());
     if (winner) {
         this.setFinished(true);
-        console.log(`${currentPlayer.getName()} has won!`);
+
+        const event = new Event("gameover");
+        document.dispatchEvent(event);
 
         return;
     }
