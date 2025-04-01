@@ -33,6 +33,12 @@ Board.prototype.reset = function() {
     cells.forEach(cell => cell.reset());
 }
 
+Board.prototype.isEveryCellMarked = function() {
+    return this.grid.flat(1).every(cell => {
+        return cell.getMark() !== "";
+    });
+}
+
 Board.prototype.onCellClick = function(callback, cellQueryClass = ".board-cell") {
     if (typeof callback !== "function") {
         throw TypeError("callback argument needs to be a function.");

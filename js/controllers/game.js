@@ -86,17 +86,27 @@ Game.prototype.playTurn = function(cell) {
 
     const currentPlayer = this.players.find(player => player.getTurn());
     cell.setMark(currentPlayer.getMark());
-    
+
     const winner = this.board.isWinner(currentPlayer.getMark());
     if (winner) {
         this.setFinished(true);
         document.dispatchEvent(new CustomEvent("gameover", {
             "detail": {
-                "winner": currentPlayer.getName(),
+                "message": `${currentPlayer.getName()} won!`
             }
         }));
 
         this.board.highlightWinnerCells(winner);
+        return;
+    }
+
+    if (this.board.isEveryCellMarked()) {
+        this.setFinished(true);
+        document.dispatchEvent(new CustomEvent("gameover", {
+            "detail": {
+                "message": "It's a draw!"
+            }
+        }));
 
         return;
     }

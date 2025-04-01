@@ -244,12 +244,10 @@ UI.prototype.onPlayerFormSubmit = function(formData) {
 UI.prototype.onGameover = function(event) {
     if (!("detail" in event)) {
         throw TypeError(`event argument must have a "detail" key.`);
-    } else if (!("winner" in event.detail)) {
-        throw TypeError(`event argument detail must have a "winner" key.`);
-    } else if (typeof event.detail.winner !== "string") {
-        throw TypeError(`event argument detail winner must be a string.`);
-    } else if (!this.players.map(player => player.getName()).includes(event.detail.winner)) {
-        throw TypeError(`event argument detail winner is not a known player: ${event.detail.winner}.`);
+    } else if (!("message" in event.detail)) {
+        throw TypeError(`event argument detail must have a "message" key.`);
+    } else if (typeof event.detail.message !== "string") {
+        throw TypeError(`event argument detail message must be a string.`);
     }
 
     if (this.playButton.isToggled()) {
@@ -260,7 +258,7 @@ UI.prototype.onGameover = function(event) {
 
     setTimeout(() => {
         const winnerText = UI.getElementById("winnerText");
-        winnerText.innerText = `${event.detail.winner} won!`;
+        winnerText.innerText = event.detail.message;
     
         this.winnerModal.show();    
     }, 1000);
