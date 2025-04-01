@@ -15,3 +15,7 @@ This is a simple tic tac toe game made with vanilla JavaScript. The rules of the
     * [Play](https://fontawesome.com/icons/play): Play button
     * [Pause](https://fontawesome.com/icons/pause): Pause button
     * [User](https://fontawesome.com/icons/user): User button
+
+### License
+
+* [MIT License](LICENSE)
