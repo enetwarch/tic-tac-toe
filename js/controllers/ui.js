@@ -17,7 +17,7 @@ export default function UI(players) {
 
     this.players = players;
 
-    this.initializeElements(elements);
+    UI.prototype.initializeElements(elements);
     
     this.resetButton.addEventListener("toggle", this.onResetButtonToggle.bind(this));
     this.resetButton.addEventListener("click", this.onResetButtonClick.bind(this));
