@@ -99,7 +99,7 @@ UI.prototype.initializeListeners = function() {
     this.playerModal.addEventListener("close", this.onPlayerModalClose.bind(this));
     this.playerForm.onSubmit(this.onPlayerFormSubmit.bind(this));
 
-    document.addEventListener("gameover", this.onDocumentGameover.bind(this));
+    document.addEventListener("gameover", this.onGameover.bind(this));
     this.winnerModal.addEventListener("close", this.onWinnerModalClose.bind(this));
     this.okWinnerButton.addEventListener("click", this.onOkWinnerButtonClick.bind(this));
 }
@@ -232,10 +232,16 @@ UI.prototype.onPlayerFormSubmit = function(formData) {
     }
 
     document.dispatchEvent(new Event("gamereset"));
+    document.dispatchEvent(new CustomEvent("rename", {
+        "detail": {
+            "names": [nameOne || "Player 1", nameTwo || "Player 2"]
+        }
+    }));
+
     this.playerModal.close();
 }
 
-UI.prototype.onDocumentGameover = function(event) {
+UI.prototype.onGameover = function(event) {
     if (!("detail" in event)) {
         throw TypeError(`event argument must have a "detail" key.`);
     } else if (!("winner" in event.detail)) {
@@ -254,7 +260,7 @@ UI.prototype.onDocumentGameover = function(event) {
     if (this.playButton.isToggled()) {
         this.playButton.click();
     }
-    
+
     this.playButton.disable();
 }
 

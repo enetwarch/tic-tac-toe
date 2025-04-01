@@ -34,6 +34,8 @@ export default function Game(players, playerCount = 2, boardSize = 3) {
     document.addEventListener("gameresume", () => this.setPaused(false));    
     document.addEventListener("gamereset", this.reset.bind(this));
 
+    document.addEventListener("rename", this.onRename.bind(this));
+
     this.reset();
 }
 
@@ -62,7 +64,7 @@ Game.prototype.setFinished = function(value) {
 }
 
 Game.prototype.reset = function() {
-    this.setPaused(true);
+    this.setPaused(false);
     this.setFinished(false);
 
     this.board.reset();
@@ -120,6 +122,23 @@ Game.prototype.getNextPlayer = function(currentPlayer = undefined) {
     const nextPlayerIndex = this.players.indexOf(currentPlayer) + 1;
     const nextPlayer = this.players[nextPlayerIndex % this.players.length];
     return nextPlayer;
+}
+
+Game.prototype.onRename = function(event) {
+    if (!("detail" in event)) {
+        throw TypeError(`event argument must have a "detail" key`);
+    } else if (!("names" in event.detail)) {
+        throw TypeError(`event argument detail must have a "names" key.`);
+    } else if (!event.detail.names.every(name => typeof name === "string")) {
+        throw TypeError("event argument detail names must be string types.");
+    } else if (event.detail.names.length !== this.players.length) {
+        throw TypeError("event argument detail names does not match the amount of players.");
+    }
+
+    this.players.forEach((player, i) => {
+        const newName = event.detail.names[i];
+        player.setName(newName);
+    });
 }
 
 Game.createCellGrid = function(size = 3) {
