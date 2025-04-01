@@ -252,16 +252,18 @@ UI.prototype.onGameover = function(event) {
         throw TypeError(`event argument detail winner is not a known player: ${event.detail.winner}.`);
     }
 
-    const winnerText = UI.getElementById("winnerText");
-    winnerText.innerText = `${event.detail.winner} won!`;
-
-    this.winnerModal.show();
-
     if (this.playButton.isToggled()) {
         this.playButton.click();
     }
 
     this.playButton.disable();
+
+    setTimeout(() => {
+        const winnerText = UI.getElementById("winnerText");
+        winnerText.innerText = `${event.detail.winner} won!`;
+    
+        this.winnerModal.show();    
+    }, 1000);
 }
 
 UI.prototype.onWinnerModalClose = function() {

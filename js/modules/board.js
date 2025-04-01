@@ -139,3 +139,18 @@ Board.DIRECTIONS = [
     (x, y, i) => [x, y - i],     // West
     (x, y, i) => [x - i, y - i], // Northwest
 ];
+
+Board.prototype.highlightWinnerCells = function(coordinatesList) {
+    if (!Array.isArray(coordinatesList)) {
+        throw TypeError("coordinatesList argument must be an array.");
+    } else if (coordinatesList.length !== this.size) {
+        throw TypeError(`coordinateList argument exceeds board size of ${this.size}.`);
+    } else if (!coordinatesList.every(coord => this.isValidCoordinates(coord))) {
+        throw TypeError(`Invalid coordinates list: ${JSON.stringify(coordinatesList)}`);
+    }
+
+    coordinatesList.forEach(coordinates => {
+        const cell = this.findCell(coordinates);
+        cell.highlightAsWinner();
+    });
+}

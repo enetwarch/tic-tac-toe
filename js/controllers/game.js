@@ -96,6 +96,8 @@ Game.prototype.playTurn = function(cell) {
             }
         }));
 
+        this.board.highlightWinnerCells(winner);
+
         return;
     }
 

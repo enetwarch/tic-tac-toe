@@ -39,17 +39,47 @@ Cell.prototype.getMark = function() {
 Cell.prototype.setMark = function(mark) {
     if (this.mark !== "") return;
 
-    const classList = Cell.getMarkClasses(mark);
-    this.icon.classList.add(...classList);
-
     this.mark = mark;
+
+    const cellClassList = Cell.getCellClasses(mark);
+    this.element.classList.add(...cellClassList);
+
+    const iconClassList = Cell.getMarkClasses(mark);
+    this.icon.classList.add(...iconClassList);
 }
 
-Cell.prototype.reset = function() {
+Cell.prototype.reset = function(elementClass = "board-cell") {
     if (this.mark === "") return;
 
-    this.icon.className = "";
+    if (typeof elementClass !== "string") {
+        throw TypeError("elementClass argument must be a string.");
+    }
+
     this.mark = "";
+
+    this.element.classList.value = elementClass;
+    this.icon.className = "";
+}
+
+Cell.prototype.highlightAsWinner = function(winnerClass = "winner-cell") {
+    if (typeof winnerClass !== "string") {
+        throw TypeError("winnerClass argument must be a string.");
+    }
+
+    this.element.classList.add(winnerClass);
+}
+
+Cell.getCellClasses = function(mark) {
+    if (typeof mark !== "string") {
+        throw TypeError("mark argument needs to be a string.");
+    }
+
+    switch (mark) {
+        case "x": return ["x-cell"];
+        case "o": return ["o-cell"];
+
+        default: throw TypeError(`mark argument only accepts "x" and "o" values.`);
+    }
 }
 
 Cell.getMarkClasses = function(mark) {
@@ -58,8 +88,8 @@ Cell.getMarkClasses = function(mark) {
     }
 
     switch (mark) {
-        case "x": return ["x-icon", "fa-solid", "fa-x"];
-        case "o": return ["o-icon", "fa-solid", "fa-o"];
+        case "x": return ["x-mark", "fa-solid", "fa-x"];
+        case "o": return ["o-mark", "fa-solid", "fa-o"];
 
         default: throw TypeError(`mark argument only accepts "x" and "o" values.`);
     }

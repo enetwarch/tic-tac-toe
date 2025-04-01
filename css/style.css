@@ -116,7 +116,7 @@ body {
     border-radius: 0.5rem;
     display: flex;
     justify-content: center;
-    transition: opacity 0.25s;
+    transition: background-color 0.25s, opacity 0.25s;
 }
 
 .board-cell:focus-visible {
@@ -131,13 +131,26 @@ body {
     opacity: 0.9;
 }
 
-.x-icon {
-    color: var(--red);
+.board-cell.x-cell {
+    background-color: var(--red);
+}
+
+.board-cell.o-cell {
+    background-color: var(--blue);
+}
+
+.board-cell.x-cell.winner-cell,
+.board-cell.o-cell.winner-cell {
+    background-color: var(--green);
+}
+
+.x-mark {
+    color: var(--light-1);
     font-size: 2rem;
 }
 
-.o-icon {
-    color: var(--blue);
+.o-mark {
+    color: var(--light-1);
     font-size: 2rem;
 }
 
