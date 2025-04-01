@@ -3,7 +3,7 @@
 This is a simple tic tac toe game made with vanilla JavaScript. The rules of the game are well-known and self-explanatory. Basically two players try to have 3 of their marks line up either horizontally, vertically, or diagonally. This game does not have many possible positions. If both players play perfectly, it will always end in a draw.
 
 > [!NOTE]
-> Self note: raw JavaScript so far is very error prone. I had to write a ton of code just for type checking and error handling. I will start using TypeScript on my future projects as it seems to negate said downsides of plain JavaScript.
+> Self note: Raw JavaScript so far is very error prone. I had to write a ton of code just for type checking and error handling. I will start using TypeScript on my future projects as it seems to negate said downsides of plain JavaScript.
 
 ### Resources
 
