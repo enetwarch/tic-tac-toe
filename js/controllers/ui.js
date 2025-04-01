@@ -17,8 +17,71 @@ export default function UI(players) {
 
     this.players = players;
 
-    UI.prototype.initializeElements(elements);
-    
+    this.initializeElements(elements);
+    this.initializeListeners();
+
+    if (this.players.every((player, i) => player.getName() === `Player ${i + 1}`)) {
+        this.userButton.click();
+    } else {
+        this.playButton.click();
+    }
+}
+
+UI.prototype.initializeElements = function(elements) {
+    if (!Array.isArray(elements)) {
+        throw TypeError("elements argument must be an array.");
+    } else if (!elements.every(element => typeof element === "object")) {
+        throw TypeError("elements argument must contain objects.");
+    } else if (!elements.every(element => "id" in element)) {
+        throw TypeError(`elements argument must contain objects that have an "id" key.`);
+    } else if (!elements.every(element => "type" in element)) {
+        throw TypeError(`elements argument must contain objects that have a "type" key.`);
+    } else if (!elements.every(element => typeof element.id === "string")) {
+        throw TypeError(`elements argument must contain objects with "id" as a string.`);
+    } else if (!elements.every(element => typeof element.type === "string")) {
+        throw TypeError(`elements argument must contain objects with "type" as a string.`);
+    }
+
+    for (const element of elements) {
+        const { id, type } = element;
+
+        const htmlElement = UI.getElementById(id);
+        this[id] = UI.elementFactory(type, htmlElement);
+    }
+}
+
+UI.getElementById = function(id) {
+    if (typeof id !== "string") {
+        throw TypeError("id argument must be a string.");
+    }
+
+    const element = document.getElementById(id);
+    if (!element) {
+        throw Error(`"${id}" element id does not exist.`);
+    } else if (!(element instanceof HTMLElement)) {
+        throw TypeError("element variable must be returned as an HTML element.");
+    }
+
+    return element;
+}
+
+UI.elementFactory = function(type, element) {
+    if (typeof type !== "string") {
+        throw TypeError("type argument must be a string.");
+    } else if (!(element instanceof HTMLElement)) {
+        throw TypeError("element argument must be an HTML element.");
+    }
+
+    switch (type) {
+        case "button": return new Button(element);
+        case "modal": return new Modal(element);
+        case "form": return new Form(element);
+
+        default: throw TypeError(`Unknown type: "${type}".`);
+    }
+}
+
+UI.prototype.initializeListeners = function() {
     this.resetButton.addEventListener("toggle", this.onResetButtonToggle.bind(this));
     this.resetButton.addEventListener("click", this.onResetButtonClick.bind(this));
     this.resetModal.addEventListener("close", this.onResetModalClose.bind(this));
@@ -169,58 +232,4 @@ UI.prototype.onPlayerFormSubmit = function(formData) {
     document.dispatchEvent(event);
 
     this.playerModal.close();
-}
-
-UI.prototype.initializeElements = function(elements) {
-    if (!Array.isArray(elements)) {
-        throw TypeError("elements argument must be an array.");
-    } else if (!elements.every(element => typeof element === "object")) {
-        throw TypeError("elements argument must contain objects.");
-    } else if (!elements.every(element => "id" in element)) {
-        throw TypeError(`elements argument must contain objects that have an "id" key.`);
-    } else if (!elements.every(element => "type" in element)) {
-        throw TypeError(`elements argument must contain objects that have a "type" key.`);
-    } else if (!elements.every(element => typeof element.id === "string")) {
-        throw TypeError(`elements argument must contain objects with "id" as a string.`);
-    } else if (!elements.every(element => typeof element.type === "string")) {
-        throw TypeError(`elements argument must contain objects with "type" as a string.`);
-    }
-
-    for (const element of elements) {
-        const { id, type } = element;
-
-        const htmlElement = UI.getElementById(id);
-        this[id] = UI.elementFactory(type, htmlElement);
-    }
-}
-
-UI.getElementById = function(id) {
-    if (typeof id !== "string") {
-        throw TypeError("id argument must be a string.");
-    }
-
-    const element = document.getElementById(id);
-    if (!element) {
-        throw Error(`"${id}" element id does not exist.`);
-    } else if (!(element instanceof HTMLElement)) {
-        throw TypeError("element variable must be returned as an HTML element.");
-    }
-
-    return element;
-}
-
-UI.elementFactory = function(type, element) {
-    if (typeof type !== "string") {
-        throw TypeError("type argument must be a string.");
-    } else if (!(element instanceof HTMLElement)) {
-        throw TypeError("element argument must be an HTML element.");
-    }
-
-    switch (type) {
-        case "button": return new Button(element);
-        case "modal": return new Modal(element);
-        case "form": return new Form(element);
-
-        default: throw TypeError(`Unknown type: "${type}".`);
-    }
 }
